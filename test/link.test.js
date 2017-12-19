@@ -187,4 +187,76 @@ describe('Links', function () {
 
     });
 
+    describe('multiple to multiple link', function () {
+        var Cell;
+
+        before(function () {
+            Cell = JOM.createClass('Cell');
+
+            JOM.link({ class: Cell, arity: '*', name: 'neighbor' }, { class: Cell, arity: '*', name: 'invNeighbor' });
+        });
+
+        it('adds and removes items', function () {
+            var cell11 = new Cell(),
+                cell12 = new Cell(),
+                cell21 = new Cell(),
+                cell22 = new Cell();
+
+            cell11.addNeighbor(cell12).addNeighbor(cell21);
+            cell22.addNeighbor(cell12).addNeighbor(cell21);
+
+            cell11.getNeighbors().should.deep.equal([cell12, cell21]);
+            cell22.getNeighbors().should.deep.equal([cell12, cell21]);
+            cell12.getInvNeighbors().should.deep.equal([cell11, cell22]);
+            cell21.getInvNeighbors().should.deep.equal([cell11, cell22]);
+        });
+
+        it('sets items correctly', function () {
+            var cell = new Cell(),
+                cell11 = new Cell(),
+                cell12 = new Cell(),
+                cell21 = new Cell();
+
+            cell.setNeighbors([cell11, cell12]);
+
+            cell.getNeighbors().should.deep.equal([cell11, cell12]);
+            cell11.getInvNeighbors().should.deep.equal([cell]);
+            cell12.getInvNeighbors().should.deep.equal([cell]);
+
+            cell.setNeighbors([cell21]);
+
+            cell.getNeighbors().should.deep.equal([cell21]);
+            cell11.getInvNeighbors().should.deep.equal([]);
+            cell12.getInvNeighbors().should.deep.equal([]);
+            cell21.getInvNeighbors().should.deep.equal([cell]);
+
+            var otherCell = new Cell().setNeighbors([cell21]);
+
+            cell21.getInvNeighbors().should.deep.equal([cell, otherCell]);
+        });
+
+        it('fires events', function () {
+            var cell1 = new Cell(),
+                cell2 = new Cell(),
+                onChangeCell1 = sinon.spy(),
+                onChangeCell1Neighbor = sinon.spy(),
+                onChangeCell2 = sinon.spy(),
+                onChangeCell2InvNeighbor = sinon.spy();
+
+            cell1.on('change', onChangeCell1);
+            cell1.on('change:neighbor', onChangeCell1Neighbor);
+            cell2.on('change', onChangeCell2);
+            cell2.on('change:invNeighbor', onChangeCell2InvNeighbor);
+
+            cell1.addNeighbor(cell2);
+
+            onChangeCell1.should.be.calledOnce;
+            onChangeCell1Neighbor.should.be.calledOnce;
+            onChangeCell2.should.be.calledOnce;
+            onChangeCell2InvNeighbor.should.be.calledOnce;
+
+        });
+
+    });
+
 });
