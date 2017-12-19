@@ -3,6 +3,85 @@ var sinon = require('sinon'),
 
 describe('Links', function () {
 
+    describe('one to one link', function () {
+        var Game, Map;
+        before(function () {
+            Game = JOM.createClass('Game');
+            Map = JOM.createClass('Map');
+
+            JOM.link({ class: Game, arity: '1' }, { class: Map, arity: '1' });
+        });
+
+        it('adds target and origin respectively', function () {
+            var game1 = new Game(),
+                game2 = new Game(),
+                map1 = new Map(),
+                map2 = new Map();
+
+            game1.setMap(map1);
+
+            game1.getMap().should.equal(map1);
+            map1.getGame().should.equal(game1);
+
+            game2.setMap(map2);
+
+            game2.getMap().should.equal(map2);
+            map2.getGame().should.equal(game2);
+
+            game1.setMap(map2);
+
+            game1.getMap().should.equal(map2);
+            expect(map1.getGame()).to.be.undefined;
+            expect(game2.getMap()).to.be.undefined;
+            map2.getGame().should.equal(game1);
+        });
+
+        it('allows self references', function () {
+            var Field = JOM.createClass('Field');
+            JOM.link({ class: Field, arity: '1', name: 'prev' }, { class: Field, arity: '1', name: 'next' });
+
+            var field = new Field();
+            field.setNext(field);
+
+            field.getNext().should.equal(field);
+            field.getPrev().should.equal(field);
+        });
+
+        it('has correct events', function () {
+            var game = new Game(),
+                map = new Map(),
+                onGameChange = sinon.spy(),
+                onGameChangeMap = sinon.spy(),
+                onMapChange = sinon.spy(),
+                onMapChangeGame = sinon.spy();
+
+            game.on('change', onGameChange);
+            game.on('change:map', onGameChangeMap);
+            map.on('change', onMapChange);
+            map.on('change:game', onMapChangeGame);
+
+            map.setGame(game);
+
+            onGameChange.should.be.calledOnce;
+            onGameChangeMap.should.be.calledOnce;
+            onMapChange.should.be.calledOnce;
+            onMapChangeGame.should.be.calledOnce;
+
+            onGameChange.reset();
+            onGameChangeMap.reset();
+            onMapChange.reset();
+            onMapChangeGame.reset();
+
+            game.setMap();
+
+            onGameChange.should.be.calledOnce;
+            onGameChangeMap.should.be.calledOnce;
+            onMapChange.should.be.calledOnce;
+            onMapChangeGame.should.be.calledOnce;
+        });
+
+    });
+
     describe('one to multiple link', function () {
         var Game, Player;
 
@@ -71,15 +150,15 @@ describe('Links', function () {
                 onGameChangePlayers = sinon.spy(),
                 onGameAddPlayer = sinon.spy(),
                 onGameRemovePlayer = sinon.spy(),
-                onPlayerChanged = sinon.spy(),
-                onPlayerChangedGame = sinon.spy();
+                onPlayerChange = sinon.spy(),
+                onPlayerChangeGame = sinon.spy();
 
             game.on('change', onGameChange);
             game.on('add:player', onGameAddPlayer);
             game.on('remove:player', onGameRemovePlayer);
             game.on('change:player', onGameChangePlayers);
-            player.on('change', onPlayerChanged);
-            player.on('change:game', onPlayerChangedGame);
+            player.on('change', onPlayerChange);
+            player.on('change:game', onPlayerChangeGame);
 
             game.addPlayer(player);
 
@@ -87,14 +166,14 @@ describe('Links', function () {
             onGameAddPlayer.should.be.calledOnce;
             onGameRemovePlayer.should.not.be.called;
             onGameChangePlayers.should.be.calledOnce;
-            onPlayerChanged.should.be.calledOnce;
-            onPlayerChangedGame.should.be.calledOnce;
+            onPlayerChange.should.be.calledOnce;
+            onPlayerChangeGame.should.be.calledOnce;
 
             onGameChange.reset();
             onGameAddPlayer.reset();
             onGameChangePlayers.reset();
-            onPlayerChanged.reset();
-            onPlayerChangedGame.reset();
+            onPlayerChange.reset();
+            onPlayerChangeGame.reset();
 
             player.setGame(new Game());
 
@@ -102,8 +181,8 @@ describe('Links', function () {
             onGameAddPlayer.should.not.be.called;
             onGameRemovePlayer.should.be.calledOnce;
             onGameChangePlayers.should.be.calledOnce;
-            onPlayerChanged.should.be.calledOnce;
-            onPlayerChangedGame.should.be.calledOnce;
+            onPlayerChange.should.be.calledOnce;
+            onPlayerChangeGame.should.be.calledOnce;
         });
 
     });
