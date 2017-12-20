@@ -35,4 +35,13 @@ describe('Creates classes which', function () {
         var game = new Game();
         spy.should.have.been.calledWith(game);
     });
+
+    it('should call the initialize function', function () {
+        var Game = JOM.createClass('Game'),
+            spy = sinon.spy();
+        Game.prototype.initialize = spy;
+        new Game();
+        spy.should.have.been.calledOnce;
+    });
+
 });
