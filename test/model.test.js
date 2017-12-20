@@ -58,4 +58,17 @@ describe('Creates classes which', function () {
         start.should.have.been.calledOnce;
     });
 
+    it('should inherit from another JOM class', function () {
+        var Field = JOM.createClass('Field');
+        Field.prototype.name = 'field';
+        var SpecialField = JOM.inherit(Field, 'SuperField'),
+            specialField = new SpecialField();
+        specialField.should.have.property('name');
+        specialField.name.should.equal('field');
+        SpecialField.prototype.name = 'superfield';
+        var anotherField = new SpecialField();
+        anotherField.should.have.property('name');
+        anotherField.name.should.equal('superfield');
+    });
+
 });
