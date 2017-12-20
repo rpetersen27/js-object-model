@@ -44,4 +44,18 @@ describe('Creates classes which', function () {
         spy.should.have.been.calledOnce;
     });
 
+    it('should have attributes via extend', function () {
+        var Game = JOM.createClass('Game'),
+            start = sinon.spy();
+        JOM.extend(Game, {
+            start: start,
+            name: 'test',
+        });
+        var game = new Game();
+        game.should.have.property('start');
+        game.name.should.equal('test');
+        game.start();
+        start.should.have.been.calledOnce;
+    });
+
 });
