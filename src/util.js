@@ -1,5 +1,11 @@
 
 module.exports = {
+
+    pluralForm: function (str) {
+        if (str.charAt(str.length - 1) === 's') return str;
+        return str + 's';
+    },
+
     toCamelcase: function () {
         var args = Array.prototype.slice.call(arguments),
             result;
@@ -13,4 +19,5 @@ module.exports = {
         });
         return result;
     },
+
 };

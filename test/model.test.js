@@ -71,4 +71,85 @@ describe('Creates classes which', function () {
         anotherField.name.should.equal('superfield');
     });
 
+    describe('attributes', function () {
+
+        it('has simple attributes', function () {
+            var Field = JOM.createClass('Field');
+            JOM.attribute(Field, 'pos', 'Number');
+            var field = new Field();
+            field.should.have.property('getPos');
+            field.should.have.property('setPos');
+            field.setPos(2);
+            field.getPos().should.equal(2);
+        });
+
+        it('has array attributes', function () {
+            var Field = JOM.createClass('Field');
+            JOM.attribute(Field, 'positions', 'Array');
+            var field = new Field();
+            field.should.have.property('positions');
+            field.should.have.property('getPositions');
+            field.should.have.property('setPositions');
+            field.should.have.property('addPositions');
+            field.should.have.property('removePositions');
+            field.should.have.property('hasPositions');
+            field.addPositions(2);
+            field.hasPositions(2).should.be.true;
+            field.getPositions().should.deep.equal([2]);
+            field.addPositions(5).removePositions(2);
+            field.getPositions().should.deep.equal([5]);
+            field.setPositions([3]);
+            field.getPositions().should.deep.equal([3]);
+        });
+
+        it('responds to events', function () {
+            var Field = JOM.createClass('Field');
+            JOM.attribute(Field, 'pos', 'Number');
+            JOM.attribute(Field, 'positions', 'Array');
+
+            var field = new Field(),
+                onChange = sinon.spy(),
+                onChangePos = sinon.spy(),
+                onChangePositions = sinon.spy(),
+                onAddPositions = sinon.spy(),
+                onRemovePositions = sinon.spy();
+
+            field.on('change', onChange);
+            field.on('change:pos', onChangePos);
+            field.on('change:positions', onChangePositions);
+            field.on('add:positions', onAddPositions);
+            field.on('remove:positions', onRemovePositions);
+
+            field.setPos(2);
+
+            onChange.should.be.calledOnce;
+            onChangePos.should.be.calledOnce;
+            onChange.reset();
+            onChangePos.reset();
+
+            field.setPositions([1]);
+
+            onChange.should.be.calledOnce;
+            onChangePositions.should.be.calledOnce;
+            onChange.reset();
+            onChangePositions.reset();
+
+            field.addPositions(2);
+
+            onChange.should.be.calledOnce;
+            onChangePositions.should.be.calledOnce;
+            onAddPositions.should.be.calledOnce;
+            onChange.reset();
+            onChangePositions.reset();
+            onAddPositions.reset();
+
+            field.removePositions(1);
+
+            onChange.should.be.calledOnce;
+            onChangePositions.should.be.calledOnce;
+            onRemovePositions.should.be.calledOnce;
+        });
+
+    });
+
 });

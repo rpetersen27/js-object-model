@@ -54,9 +54,9 @@ function oneToOne(from, to) {
 function oneToMultiple(from, to) {
     var Origin = from.class.prototype,
         Target = to.class.prototype,
-        targets = to.name + 's',
-        getTargets = util.toCamelcase('get', to.name + 's'),
-        setTargets = util.toCamelcase('set', to.name + 's'),
+        targets = util.pluralForm(to.name),
+        getTargets = util.toCamelcase('get', util.pluralForm(to.name)),
+        setTargets = util.toCamelcase('set', util.pluralForm(to.name)),
         addTarget = util.toCamelcase('add', to.name),
         removeTarget = util.toCamelcase('remove', to.name),
         origin = from.name,
@@ -143,14 +143,14 @@ function oneToMultiple(from, to) {
 function multipleToMultiple(from, to) {
     var Origin = from.class.prototype,
         Target = to.class.prototype,
-        targets = to.name + 's',
-        getTargets = util.toCamelcase('get', to.name + 's'),
-        setTargets = util.toCamelcase('set', to.name + 's'),
+        targets = util.pluralForm(to.name),
+        getTargets = util.toCamelcase('get', util.pluralForm(to.name)),
+        setTargets = util.toCamelcase('set', util.pluralForm(to.name)),
         addTarget = util.toCamelcase('add', to.name),
         removeTarget = util.toCamelcase('remove', to.name),
-        origins = from.name + 's',
-        getOrigins = util.toCamelcase('get', from.name + 's'),
-        setOrigins = util.toCamelcase('set', from.name + 's'),
+        origins = util.pluralForm(from.name),
+        getOrigins = util.toCamelcase('get', util.pluralForm(from.name)),
+        setOrigins = util.toCamelcase('set', util.pluralForm(from.name)),
         addOrigin = util.toCamelcase('add', from.name),
         removeOrigin = util.toCamelcase('remove', from.name);
 
