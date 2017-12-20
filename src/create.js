@@ -16,5 +16,18 @@ module.exports = function (name) {
         args[0] = event + ':' + name;
         globalEmitter.on.apply(globalEmitter, args);
     };
+    func.link = function (from, to) {
+        from.class = this;
+        require('./link')(from, to);
+        return this;
+    };
+    func.attribute = function (name, type) {
+        require('./attribute')(this, name, type);
+        return this;
+    };
+    func.extend = function (obj) {
+        require('./extend')(this, obj);
+        return this;
+    };
     return func;
 };

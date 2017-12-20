@@ -22,8 +22,14 @@ describe('Creates classes which', function () {
         // properties
         game.should.have.property('players');
 
-        // event emitter stuff
+
+        // clazz based stuff
         Game.should.have.property('on');
+        Game.should.have.property('link');
+        Game.should.have.property('attribute');
+        Game.should.have.property('extend');
+
+        // event emitter stuff
         game.should.have.property('on');
         game.should.have.property('emit');
     });
@@ -69,6 +75,26 @@ describe('Creates classes which', function () {
         var anotherField = new SpecialField();
         anotherField.should.have.property('name');
         anotherField.name.should.equal('superfield');
+    });
+
+    it('should chain link, attribute and extend', function () {
+        var Field = JOM.createClass('Field');
+        Field
+            .attribute('pos', 'Number')
+            .attribute('list', 'Array')
+            .link({ arity: '1', name: 'prev' }, { class: Field, arity: '1', name: 'next' })
+            .extend({ start: function () {} });
+        var field = new Field();
+        field.should.have.property('list');
+        field.should.have.property('getLists');
+        field.should.have.property('setLists');
+        field.should.have.property('addList');
+        field.should.have.property('removeList');
+        field.should.have.property('getPrev');
+        field.should.have.property('setPrev');
+        field.should.have.property('getNext');
+        field.should.have.property('setNext');
+        field.should.have.property('start');
     });
 
     describe('attributes', function () {
