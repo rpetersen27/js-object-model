@@ -202,13 +202,13 @@ describe('Links', function () {
                 cell21 = new Cell(),
                 cell22 = new Cell();
 
-            cell11.addToNeighbors(cell12).addToNeighbors(cell21);
-            cell22.addToNeighbors(cell12).addToNeighbors(cell21);
+            cell11.neighbors.push(cell12, cell21);
+            cell22.neighbors.push(cell12, cell21);
 
-            cell11.getNeighbors().should.deep.equal([cell12, cell21]);
-            cell22.getNeighbors().should.deep.equal([cell12, cell21]);
-            cell12.getInvNeighbors().should.deep.equal([cell11, cell22]);
-            cell21.getInvNeighbors().should.deep.equal([cell11, cell22]);
+            cell11.neighbors.should.deep.equal([cell12, cell21]);
+            cell22.neighbors.should.deep.equal([cell12, cell21]);
+            cell12.invNeighbors.should.deep.equal([cell11, cell22]);
+            cell21.invNeighbors.should.deep.equal([cell11, cell22]);
         });
 
         it('sets items correctly', function () {
@@ -217,22 +217,23 @@ describe('Links', function () {
                 cell12 = new Cell(),
                 cell21 = new Cell();
 
-            cell.setNeighbors([cell11, cell12]);
+            cell.neighbors = [cell11, cell12];
 
-            cell.getNeighbors().should.deep.equal([cell11, cell12]);
-            cell11.getInvNeighbors().should.deep.equal([cell]);
-            cell12.getInvNeighbors().should.deep.equal([cell]);
+            cell.neighbors.should.deep.equal([cell11, cell12]);
+            cell11.invNeighbors.should.deep.equal([cell]);
+            cell12.invNeighbors.should.deep.equal([cell]);
 
-            cell.setNeighbors([cell21]);
+            cell.neighbors = [cell21];
 
-            cell.getNeighbors().should.deep.equal([cell21]);
-            cell11.getInvNeighbors().should.deep.equal([]);
-            cell12.getInvNeighbors().should.deep.equal([]);
-            cell21.getInvNeighbors().should.deep.equal([cell]);
+            cell.neighbors.should.deep.equal([cell21]);
+            cell11.invNeighbors.should.deep.equal([]);
+            cell12.invNeighbors.should.deep.equal([]);
+            cell21.invNeighbors.should.deep.equal([cell]);
 
-            var otherCell = new Cell().setNeighbors([cell21]);
+            var otherCell = new Cell();
+            otherCell.neighbors = [cell21];
 
-            cell21.getInvNeighbors().should.deep.equal([cell, otherCell]);
+            cell21.invNeighbors.should.deep.equal([cell, otherCell]);
         });
 
         it('fires events', function () {
@@ -248,7 +249,7 @@ describe('Links', function () {
             cell2.on('change', onChangeCell2);
             cell2.on('change:invNeighbors', onChangeCell2InvNeighbor);
 
-            cell1.addToNeighbors(cell2);
+            cell1.neighbors.push(cell2);
 
             onChangeCell1.should.be.calledOnce;
             onChangeCell1Neighbor.should.be.calledOnce;
