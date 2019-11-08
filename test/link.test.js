@@ -97,27 +97,27 @@ describe('Links', function () {
                 game2 = new Game(),
                 player = new Player();
 
-            game1.getPlayers().should.deep.equal([]);
-            game2.getPlayers().should.deep.equal([]);
-            expect(player.getGame()).to.be.undefined;
+            game1.players.should.deep.equal([]);
+            game2.players.should.deep.equal([]);
+            expect(player.game).to.be.undefined;
 
-            game1.addToPlayers(player);
+            game1.players.push(player);
 
-            game1.getPlayers().should.deep.equal([ player ]);
-            game2.getPlayers().should.deep.equal([]);
-            player.getGame().should.equal(game1);
+            game1.players.should.deep.equal([ player ]);
+            game2.players.should.deep.equal([]);
+            player.game.should.equal(game1);
 
-            player.setGame(game2);
+            player.game = game2;
 
-            game1.getPlayers().should.deep.equal([]);
-            game2.getPlayers().should.deep.equal([ player ]);
-            player.getGame().should.deep.equal(game2);
+            game1.players.should.deep.equal([]);
+            game2.players.should.deep.equal([ player ]);
+            player.game.should.deep.equal(game2);
 
-            game2.removeFromPlayers(player);
+            game2.players.remove(player);
 
-            game1.getPlayers().should.deep.equal([]);
-            game2.getPlayers().should.deep.equal([]);
-            expect(player.getGame()).to.be.undefined;
+            game1.players.should.deep.equal([]);
+            game2.players.should.deep.equal([]);
+            expect(player.game).to.be.undefined;
         });
 
         it('overwrites existing models in origin and links them correctly', function () {
@@ -125,22 +125,22 @@ describe('Links', function () {
                 prevPlayers = [new Player(), new Player()],
                 nextPlayers = [new Player(), new Player(), new Player()];
 
-            game.getPlayers().should.deep.equal([]);
+            game.players.should.deep.equal([]);
 
-            game.setPlayers(prevPlayers);
+            game.players = prevPlayers;
 
-            game.getPlayers().should.deep.equal(prevPlayers);
-            prevPlayers[0].getGame().should.equal(game);
-            prevPlayers[1].getGame().should.equal(game);
+            game.players.should.deep.equal(prevPlayers);
+            prevPlayers[0].game.should.equal(game);
+            prevPlayers[1].game.should.equal(game);
 
-            game.setPlayers(nextPlayers);
+            game.players = nextPlayers;
 
-            game.getPlayers().should.deep.equal(nextPlayers);
-            expect(prevPlayers[0].getGame()).to.be.undefined;
-            expect(prevPlayers[1].getGame()).to.be.undefined;
-            nextPlayers[0].getGame().should.equal(game);
-            nextPlayers[1].getGame().should.equal(game);
-            nextPlayers[2].getGame().should.equal(game);
+            game.players.should.deep.equal(nextPlayers);
+            expect(prevPlayers[0].game).to.be.undefined;
+            expect(prevPlayers[1].game).to.be.undefined;
+            nextPlayers[0].game.should.equal(game);
+            nextPlayers[1].game.should.equal(game);
+            nextPlayers[2].game.should.equal(game);
         });
 
         it('listens to events', function () {
@@ -160,7 +160,7 @@ describe('Links', function () {
             player.on('change', onPlayerChange);
             player.on('change:game', onPlayerChangeGame);
 
-            game.addToPlayers(player);
+            game.players.push(player);
 
             onGameChange.should.be.calledOnce;
             onGameAddPlayer.should.be.calledOnce;
@@ -175,7 +175,7 @@ describe('Links', function () {
             onPlayerChange.reset();
             onPlayerChangeGame.reset();
 
-            player.setGame(new Game());
+            player.game = new Game();
 
             onGameChange.should.be.calledOnce;
             onGameAddPlayer.should.not.be.called;

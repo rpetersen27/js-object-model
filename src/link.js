@@ -8,19 +8,18 @@ function defineProperty(clazz, name, nameInv) {
                 return value;
             },
             set: function (newValue) {
-                if (newValue === value) return this;
+                if (newValue === value) return;
                 var oldValue = value;
                 if (value) {
                     value = undefined;
                     oldValue[nameInv] = undefined;
                 }
                 value = newValue;
-                this.emit('change:' + name, value, oldValue, this);
-                this.emit('change', name, value, oldValue, this);
                 if (value) {
                     value[nameInv] = this;
                 }
-                return this;
+                this.emit('change:' + name, value, oldValue, this);
+                this.emit('change', name, value, oldValue, this);
             }
         });
     });
@@ -33,93 +32,84 @@ function oneToOne(from, to) {
     defineProperty(to.class, from.name, to.name);
 }
 
-function oneToMultiple(from, to) {
-    var Origin = from.class.prototype,
-        Target = to.class.prototype,
-        targets = to.name,
-        getTargets = util.toCamelcase('get', to.name),
-        setTargets = util.toCamelcase('set', to.name),
-        addTarget = util.toCamelcase('addTo', to.name),
-        removeTarget = util.toCamelcase('removeFrom', to.name),
-        origin = from.name,
-        getOrigin = util.toCamelcase('get', from.name),
-        setOrigin = util.toCamelcase('set', from.name);
+function reactiveArray(obj, name, nameInv, arr) {
+    // TODO arr.shift(), arr.unshift(), arr.pop(), arr.splice()
 
-    // add init listeners
+    arr.push = function () {
+        var args = Array.prototype.slice.call(arguments).filter(function (item) {
+            return this.indexOf(item) < 0;
+        }.bind(this));
+        var result = Array.prototype.push.apply(this, args);
+        args.forEach(function (item) {
+            item[nameInv] = obj;
+        }.bind(this));
+        args.forEach(function (item) {
+            obj.emit('addto:' + name, item, obj);
+            obj.emit('change:' + name, arr, arr, obj);
+            obj.emit('change', name, arr, arr, obj);
+        })
+        return result;
+    };
+
+    arr.remove = function (item) {
+        var index = this.indexOf(item);
+        if (index < 0) return;
+        Array.prototype.splice.call(this, index, 1);
+        item[nameInv] = undefined;
+        obj.emit('removefrom:' + name, item, obj);
+        obj.emit('change:' + name, arr, arr, obj);
+        obj.emit('change', name, arr, arr, obj);
+    };
+
+    return arr;
+}
+
+function oneToMultiple(from, to) {
     from.class.on('init', function (obj) {
-        obj[targets] = [];
+        var list = reactiveArray(obj, to.name, from.name, []);
+        Object.defineProperty(obj, to.name, {
+            get: function () {
+                return list;
+            },
+            set: function (newList) {
+                if (newList === list) return;
+                var oldList = list;
+                list = undefined;
+                (oldList || []).forEach(function (item) {
+                    item[from.name] = undefined;
+                });
+                list = reactiveArray(obj, to.name, from.name, newList);
+                (newList || []).forEach(function (item) {
+                    item[from.name] = this;
+                }.bind(this));
+                this.emit('change:' + to.name, list, oldList, this);
+                this.emit('change', to.name, list, oldList, this);
+            }
+        });
     });
 
-    // Getter and setter of origin
-    Origin[getTargets] = function () {
-        return this[targets];
-    };
-    Origin[setTargets] = function (targs) {
-        var self = this,
-            oldTargets = this[targets];
-        this[targets] = [].concat(targs);
-        this.emit('change:' + to.name, this[targets], oldTargets, this);
-        this.emit('change', to.name, this[targets], oldTargets, this);
-        // remove origin from old targets
-        if (oldTargets) {
-            oldTargets.forEach(function (target, index) {
-                target[setOrigin]();
-            });
-        }
-        // add origin to new targets
-        if (targs) {
-            targs.forEach(function (target) {
-                target[setOrigin](self);
-            });
-        }
-        return this;
-    };
-
-    // add and remove of origin
-    Origin[addTarget] = function (target) {
-        if (!target || this[targets].indexOf(target) >= 0) return this;
-        var oldTargets = this[targets];
-        this[targets] = [].concat(this[targets]);
-        this[targets].push(target);
-        this.emit('addto:' + to.name, target, this);
-        this.emit('change:' + to.name, this[targets], oldTargets, this);
-        this.emit('change', to.name, this[targets], oldTargets, this);
-        target[setOrigin](this);
-        return this;
-    };
-    Origin[removeTarget] = function (target) {
-        var index = this[targets].indexOf(target);
-        if (index >= 0) {
-            var oldTargets = this[targets];
-            this[targets] = [].concat(this[targets]);
-            this[targets].splice(index, 1);
-            this.emit('removefrom:' + to.name, target, this);
-            this.emit('change:' + to.name, this[targets], oldTargets, this);
-            this.emit('change', to.name, this[targets], oldTargets, this);
-            target[setOrigin]();
-        }
-        return this;
-    };
-
-    // Getter and setter of target
-    Target[getOrigin] = function () {
-        return this[origin];
-    };
-    Target[setOrigin] = function (orig) {
-        if (orig === this[origin]) return this;
-        var oldOrigin = this[origin];
-        if (this[origin]) {
-            delete this[origin];
-            oldOrigin[removeTarget](this);
-        }
-        this[origin] = orig;
-        this.emit('change:' + from.name, this[origin], oldOrigin, this);
-        this.emit('change', from.name, this[origin], oldOrigin, this);
-        if (this[origin]) {
-            this[origin][addTarget](this);
-        }
-        return this;
-    };
+    to.class.on('init', function (obj) {
+        var value;
+        Object.defineProperty(obj, from.name, {
+            get: function () {
+                return value;
+            },
+            set: function (newValue) {
+                if (newValue === value) return;
+                var oldValue = value;
+                if (oldValue && oldValue[to.name]) {
+                    value = undefined;
+                    oldValue[to.name].remove(this);
+                }
+                value = newValue;
+                if (value) {
+                    value[to.name].push(this);
+                }
+                this.emit('change:' + from.name, value, oldValue, this);
+                this.emit('change', from.name, value, oldValue, this);
+            }
+        });
+    });
 }
 
 function multipleToMultiple(from, to) {

@@ -12,13 +12,6 @@ describe('Creates classes which', function () {
         var game = new Game(),
             player = new Player();
 
-        // getter and setter
-        game.should.have.property('getPlayers');
-        game.should.have.property('setPlayers');
-        game.should.have.property('addToPlayers');
-        player.should.have.property('setGame');
-        player.should.have.property('getGame');
-
         // properties
         game.should.have.property('players');
 
