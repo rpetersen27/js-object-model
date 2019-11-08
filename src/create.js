@@ -1,20 +1,18 @@
 var EventEmitter = require('events').EventEmitter,
-    inherits = require('inherits'),
-    globalEmitter = new EventEmitter();
+    inherits = require('inherits');
 
 module.exports = function (name) {
-    var func, code = [
-        'var func = function ' + name + '() { ',
+    var emitter = new EventEmitter(), func, code = [
+        'func = function ' + name + '() { ',
             'EventEmitter.call(this);',
-            'globalEmitter.emit("init:' + name + '", this);',
+            'emitter.emit("init", this);',
             'if (this.initialize) this.initialize();',
         '}'].join(' ');
     eval(code);
     inherits(func, EventEmitter);
-    func.on = function (event) {
+    func.on = function () {
         var args = Array.prototype.slice.call(arguments);
-        args[0] = event + ':' + name;
-        globalEmitter.on.apply(globalEmitter, args);
+        emitter.on.apply(emitter, args);
     };
     func.link = function (from, to) {
         from.class = this;

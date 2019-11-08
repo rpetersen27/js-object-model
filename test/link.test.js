@@ -18,22 +18,22 @@ describe('Links', function () {
                 map1 = new Map(),
                 map2 = new Map();
 
-            game1.setMap(map1);
+            game1.map = map1;
 
-            game1.getMap().should.equal(map1);
-            map1.getGame().should.equal(game1);
+            game1.map.should.equal(map1);
+            map1.game.should.equal(game1);
 
-            game2.setMap(map2);
+            game2.map = map2;
 
-            game2.getMap().should.equal(map2);
-            map2.getGame().should.equal(game2);
+            game2.map.should.equal(map2);
+            map2.game.should.equal(game2);
 
-            game1.setMap(map2);
+            game1.map = map2;
 
-            game1.getMap().should.equal(map2);
-            expect(map1.getGame()).to.be.undefined;
-            expect(game2.getMap()).to.be.undefined;
-            map2.getGame().should.equal(game1);
+            game1.map.should.equal(map2);
+            expect(map1.game).to.be.undefined;
+            expect(game2.map).to.be.undefined;
+            map2.game.should.equal(game1);
         });
 
         it('allows self references', function () {
@@ -41,10 +41,10 @@ describe('Links', function () {
             JOM.link({ class: Field, arity: '1', name: 'prev' }, { class: Field, arity: '1', name: 'next' });
 
             var field = new Field();
-            field.setNext(field);
+            field.next = field;
 
-            field.getNext().should.equal(field);
-            field.getPrev().should.equal(field);
+            field.next.should.equal(field);
+            field.prev.should.equal(field);
         });
 
         it('has correct events', function () {
@@ -60,7 +60,7 @@ describe('Links', function () {
             map.on('change', onMapChange);
             map.on('change:game', onMapChangeGame);
 
-            map.setGame(game);
+            map.game = game;
 
             onGameChange.should.be.calledOnce;
             onGameChangeMap.should.be.calledOnce;
@@ -72,7 +72,7 @@ describe('Links', function () {
             onMapChange.reset();
             onMapChangeGame.reset();
 
-            game.setMap();
+            game.map = undefined;
 
             onGameChange.should.be.calledOnce;
             onGameChangeMap.should.be.calledOnce;

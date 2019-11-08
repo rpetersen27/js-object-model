@@ -90,10 +90,6 @@ describe('Creates classes which', function () {
         field.should.have.property('setLists');
         field.should.have.property('addList');
         field.should.have.property('removeList');
-        field.should.have.property('getPrev');
-        field.should.have.property('setPrev');
-        field.should.have.property('getNext');
-        field.should.have.property('setNext');
         field.should.have.property('start');
     });
 

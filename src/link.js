@@ -1,54 +1,36 @@
 var util = require('./util');
 
+function defineProperty(clazz, name, nameInv) {
+    clazz.on('init', function (obj) {
+        var value;
+        Object.defineProperty(obj, name, {
+            get: function () {
+                return value;
+            },
+            set: function (newValue) {
+                if (newValue === value) return this;
+                var oldValue = value;
+                if (value) {
+                    value = undefined;
+                    oldValue[nameInv] = undefined;
+                }
+                value = newValue;
+                this.emit('change:' + name, value, oldValue, this);
+                this.emit('change', name, value, oldValue, this);
+                if (value) {
+                    value[nameInv] = this;
+                }
+                return this;
+            }
+        });
+    });
+}
+
 function oneToOne(from, to) {
-    var Origin = from.class.prototype,
-        Target = to.class.prototype,
-        target = to.name,
-        getTarget = util.toCamelcase('get', to.name),
-        setTarget = util.toCamelcase('set', to.name),
-        origin = from.name,
-        getOrigin = util.toCamelcase('get', from.name),
-        setOrigin = util.toCamelcase('set', from.name);
-
     // Getter and setter of origin
-    Origin[getTarget] = function () {
-        return this[target];
-    };
-    Origin[setTarget] = function (targ) {
-        if (targ === this[target]) return this;
-        var oldTarget = this[target];
-        if (this[target]) {
-            delete this[target];
-            oldTarget[setOrigin]();
-        }
-        this[target] = targ;
-        this.emit('change:' + to.name, this[target], oldTarget, this);
-        this.emit('change', to.name, this[target], oldTarget, this);
-        if (this[target]) {
-            this[target][setOrigin](this);
-        }
-        return this;
-    };
-
+    defineProperty(from.class, to.name, from.name);
     // Getter and setter of target
-    Target[getOrigin] = function () {
-        return this[origin];
-    };
-    Target[setOrigin] = function (orig) {
-        if (orig === this[origin]) return this;
-        var oldOrigin = this[origin];
-        if (this[origin]) {
-            delete this[origin];
-            oldOrigin[setTarget]();
-        }
-        this[origin] = orig;
-        this.emit('change:' + from.name, this[origin], oldOrigin, this);
-        this.emit('change', from.name, this[origin], oldOrigin, this);
-        if (this[origin]) {
-            this[origin][setTarget](this);
-        }
-        return this;
-    };
+    defineProperty(to.class, from.name, to.name);
 }
 
 function oneToMultiple(from, to) {
