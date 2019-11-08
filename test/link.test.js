@@ -101,7 +101,7 @@ describe('Links', function () {
             game2.getPlayers().should.deep.equal([]);
             expect(player.getGame()).to.be.undefined;
 
-            game1.addPlayer(player);
+            game1.addToPlayers(player);
 
             game1.getPlayers().should.deep.equal([ player ]);
             game2.getPlayers().should.deep.equal([]);
@@ -113,7 +113,7 @@ describe('Links', function () {
             game2.getPlayers().should.deep.equal([ player ]);
             player.getGame().should.deep.equal(game2);
 
-            game2.removePlayer(player);
+            game2.removeFromPlayers(player);
 
             game1.getPlayers().should.deep.equal([]);
             game2.getPlayers().should.deep.equal([]);
@@ -154,13 +154,13 @@ describe('Links', function () {
                 onPlayerChangeGame = sinon.spy();
 
             game.on('change', onGameChange);
-            game.on('add:player', onGameAddPlayer);
-            game.on('remove:player', onGameRemovePlayer);
-            game.on('change:player', onGameChangePlayers);
+            game.on('addto:players', onGameAddPlayer);
+            game.on('removefrom:players', onGameRemovePlayer);
+            game.on('change:players', onGameChangePlayers);
             player.on('change', onPlayerChange);
             player.on('change:game', onPlayerChangeGame);
 
-            game.addPlayer(player);
+            game.addToPlayers(player);
 
             onGameChange.should.be.calledOnce;
             onGameAddPlayer.should.be.calledOnce;
@@ -193,7 +193,7 @@ describe('Links', function () {
         before(function () {
             Cell = JOM.createClass('Cell');
 
-            JOM.link({ class: Cell, arity: '*', name: 'neighbor' }, { class: Cell, arity: '*', name: 'invNeighbor' });
+            JOM.link({ class: Cell, arity: '*', name: 'neighbors' }, { class: Cell, arity: '*', name: 'invNeighbors' });
         });
 
         it('adds and removes items', function () {
@@ -202,8 +202,8 @@ describe('Links', function () {
                 cell21 = new Cell(),
                 cell22 = new Cell();
 
-            cell11.addNeighbor(cell12).addNeighbor(cell21);
-            cell22.addNeighbor(cell12).addNeighbor(cell21);
+            cell11.addToNeighbors(cell12).addToNeighbors(cell21);
+            cell22.addToNeighbors(cell12).addToNeighbors(cell21);
 
             cell11.getNeighbors().should.deep.equal([cell12, cell21]);
             cell22.getNeighbors().should.deep.equal([cell12, cell21]);
@@ -244,11 +244,11 @@ describe('Links', function () {
                 onChangeCell2InvNeighbor = sinon.spy();
 
             cell1.on('change', onChangeCell1);
-            cell1.on('change:neighbor', onChangeCell1Neighbor);
+            cell1.on('change:neighbors', onChangeCell1Neighbor);
             cell2.on('change', onChangeCell2);
-            cell2.on('change:invNeighbor', onChangeCell2InvNeighbor);
+            cell2.on('change:invNeighbors', onChangeCell2InvNeighbor);
 
-            cell1.addNeighbor(cell2);
+            cell1.addToNeighbors(cell2);
 
             onChangeCell1.should.be.calledOnce;
             onChangeCell1Neighbor.should.be.calledOnce;

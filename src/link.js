@@ -54,11 +54,11 @@ function oneToOne(from, to) {
 function oneToMultiple(from, to) {
     var Origin = from.class.prototype,
         Target = to.class.prototype,
-        targets = util.pluralForm(to.name),
-        getTargets = util.toCamelcase('get', util.pluralForm(to.name)),
-        setTargets = util.toCamelcase('set', util.pluralForm(to.name)),
-        addTarget = util.toCamelcase('add', to.name),
-        removeTarget = util.toCamelcase('remove', to.name),
+        targets = to.name,
+        getTargets = util.toCamelcase('get', to.name),
+        setTargets = util.toCamelcase('set', to.name),
+        addTarget = util.toCamelcase('addTo', to.name),
+        removeTarget = util.toCamelcase('removeFrom', to.name),
         origin = from.name,
         getOrigin = util.toCamelcase('get', from.name),
         setOrigin = util.toCamelcase('set', from.name);
@@ -99,7 +99,7 @@ function oneToMultiple(from, to) {
         var oldTargets = this[targets];
         this[targets] = [].concat(this[targets]);
         this[targets].push(target);
-        this.emit('add:' + to.name, target, this);
+        this.emit('addto:' + to.name, target, this);
         this.emit('change:' + to.name, this[targets], oldTargets, this);
         this.emit('change', to.name, this[targets], oldTargets, this);
         target[setOrigin](this);
@@ -111,7 +111,7 @@ function oneToMultiple(from, to) {
             var oldTargets = this[targets];
             this[targets] = [].concat(this[targets]);
             this[targets].splice(index, 1);
-            this.emit('remove:' + to.name, target, this);
+            this.emit('removefrom:' + to.name, target, this);
             this.emit('change:' + to.name, this[targets], oldTargets, this);
             this.emit('change', to.name, this[targets], oldTargets, this);
             target[setOrigin]();
@@ -143,16 +143,18 @@ function oneToMultiple(from, to) {
 function multipleToMultiple(from, to) {
     var Origin = from.class.prototype,
         Target = to.class.prototype,
-        targets = util.pluralForm(to.name),
-        getTargets = util.toCamelcase('get', util.pluralForm(to.name)),
-        setTargets = util.toCamelcase('set', util.pluralForm(to.name)),
-        addTarget = util.toCamelcase('add', to.name),
-        removeTarget = util.toCamelcase('remove', to.name),
-        origins = util.pluralForm(from.name),
-        getOrigins = util.toCamelcase('get', util.pluralForm(from.name)),
-        setOrigins = util.toCamelcase('set', util.pluralForm(from.name)),
-        addOrigin = util.toCamelcase('add', from.name),
-        removeOrigin = util.toCamelcase('remove', from.name);
+        targets = to.name,
+        getTargets = util.toCamelcase('get', to.name),
+        setTargets = util.toCamelcase('set', to.name),
+        addTarget = util.toCamelcase('addTo', to.name),
+        removeTarget = util.toCamelcase('removeFrom', to.name),
+        origins = from.name,
+        getOrigins = util.toCamelcase('get', from.name),
+        setOrigins = util.toCamelcase('set', from.name),
+        addOrigin = util.toCamelcase('addTo', from.name),
+        removeOrigin = util.toCamelcase('removeFrom', from.name);
+
+    console.log('add target', util.toCamelcase('addTo', to.name));
 
     // add init listeners
     from.class.on('init', function (obj) {
@@ -190,7 +192,7 @@ function multipleToMultiple(from, to) {
         var oldTargets = this[targets];
         this[targets] = [].concat(this[targets]);
         this[targets].push(target);
-        this.emit('add:' + to.name, target, this);
+        this.emit('addto:' + to.name, target, this);
         this.emit('change:' + to.name, this[targets], oldTargets, this);
         this.emit('change', to.name, this[targets], oldTargets, this);
         target[addOrigin](this);
@@ -202,7 +204,7 @@ function multipleToMultiple(from, to) {
             var oldTargets = this[targets];
             this[targets] = [].concat(this[targets]);
             this[targets].splice(index, 1);
-            this.emit('remove:' + to.name, target, this);
+            this.emit('removefrom:' + to.name, target, this);
             this.emit('change:' + to.name, this[targets], oldTargets, this);
             this.emit('change', to.name, this[targets], oldTargets, this);
             target[removeOrigin](this);
@@ -246,7 +248,7 @@ function multipleToMultiple(from, to) {
         var oldOrigins = this[origins];
         this[origins] = [].concat(this[origins]);
         this[origins].push(origin);
-        this.emit('add:' + from.name, origin, this);
+        this.emit('addto:' + from.name, origin, this);
         this.emit('change:' + from.name, this[origins], oldOrigins, this);
         this.emit('change', from.name, this[origins], oldOrigins, this);
         origin[addTarget](this);
@@ -258,7 +260,7 @@ function multipleToMultiple(from, to) {
             var oldOrigins = this[origins];
             this[origins] = [].concat(this[origins]);
             this[origins].splice(index, 1);
-            this.emit('remove:' + from.name, origin, this);
+            this.emit('removefrom:' + from.name, origin, this);
             this.emit('change:' + from.name, this[origins], oldOrigins, this);
             this.emit('change', from.name, this[origins], oldOrigins, this);
             origin[removeTarget](this);
@@ -268,8 +270,14 @@ function multipleToMultiple(from, to) {
 }
 
 module.exports = function (from, to) {
-    if (!from.name) from.name = from.class.prototype.constructor.name.toLowerCase();
-    if (!to.name) to.name = to.class.prototype.constructor.name.toLowerCase();
+    if (!from.name) {
+        from.name = from.class.prototype.constructor.name.toLowerCase();
+        if (from.arity === '*') from.name = util.pluralForm(from.name);
+    }
+    if (!to.name) {
+        to.name = to.class.prototype.constructor.name.toLowerCase();
+        if (to.arity === '*') to.name = util.pluralForm(to.name);
+    }
 
     if (from.arity === '1' && to.arity === '1') return oneToOne(from, to);
     else if (from.arity === '1' && to.arity === '*') return oneToMultiple(from, to);
