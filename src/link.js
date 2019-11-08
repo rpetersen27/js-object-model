@@ -136,8 +136,6 @@ function multipleToMultiple(from, to) {
         addOrigin = util.toCamelcase('addTo', from.name),
         removeOrigin = util.toCamelcase('removeFrom', from.name);
 
-    console.log('add target', util.toCamelcase('addTo', to.name));
-
     // add init listeners
     from.class.on('init', function (obj) {
         obj[targets] = [];
