@@ -301,4 +301,109 @@ describe('Links', function () {
 
     });
 
+    describe('shortcuts', function () {
+
+        var Clazz1, Clazz2;
+
+        beforeEach(function () {
+            Clazz1 = JOM.createClass('Clazz1');
+            Clazz2 = JOM.createClass('Clazz2');
+        });
+
+        describe('links', function () {
+            it('1-1', function () {
+                JOM.link(Clazz1, Clazz2, '1-1');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('clazz2');
+                instance2.should.have.property('clazz1');
+            });
+
+            it('1-*', function () {
+                JOM.link(Clazz1, Clazz2, '1-*');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.clazz2s.should.deep.equal([]);
+                instance2.should.have.property('clazz1');
+            });
+
+            it('*-1', function () {
+                JOM.link(Clazz1, Clazz2, '*-1');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('clazz2');
+                instance2.clazz1s.should.deep.equal([]);
+            });
+
+            it('*-*', function () {
+                JOM.link(Clazz1, Clazz2, '*-*');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.clazz2s.should.deep.equal([]);
+                instance2.clazz1s.should.deep.equal([]);
+            });
+        });
+
+        describe('named links', function () {
+            it('1:prev-1:next', function () {
+                JOM.link(Clazz1, Clazz2, '1:prev-1:next');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('next');
+                instance2.should.have.property('prev');
+            });
+
+            it('1:parent-*:children', function () {
+                JOM.link(Clazz1, Clazz2, '1:parent-*:children');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.children.should.deep.equal([]);
+                instance2.should.have.property('parent');
+            });
+
+            it('*:children-1:parent', function () {
+                JOM.link(Clazz1, Clazz2, '*:children-1:parent');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('parent');
+                instance2.children.should.deep.equal([]);
+            });
+
+            it('*:sibling-*:sibling', function () {
+                JOM.link(Clazz1, Clazz2, '*:siblings-*:siblings');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.siblings.should.deep.equal([]);
+                instance2.siblings.should.deep.equal([]);
+            });
+        });
+
+        describe('mixed links', function () {
+            it('1-1:other', function () {
+                JOM.link(Clazz1, Clazz2, '1-1:other');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('other');
+                instance2.should.have.property('clazz1');
+            });
+
+            it('*:children-1', function () {
+                JOM.link(Clazz1, Clazz2, '*:children-1');
+                var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('clazz2');
+                instance2.children.should.deep.equal([]);
+            });
+        });
+
+        it('class link', function () {
+            Clazz1.link(Clazz2, '1-1');
+            var instance1 = new Clazz1(),
+                    instance2 = new Clazz2();
+                instance1.should.have.property('clazz2');
+                instance2.should.have.property('clazz1');
+        });
+
+    });
+
 });
