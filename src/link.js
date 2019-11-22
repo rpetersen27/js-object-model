@@ -47,7 +47,23 @@ function reactiveOneArray(obj, name, nameInv, arr) {
             obj.emit('addto:' + name, item, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
-        })
+        });
+        return result;
+    };
+
+    arr.unshift = function () {
+        var args = Array.prototype.slice.call(arguments).filter(function (item) {
+            return this.indexOf(item) < 0;
+        }.bind(this));
+        var result = Array.prototype.unshift.apply(this, args);
+        args.forEach(function (item) {
+            item[nameInv] = obj;
+        }.bind(this));
+        args.forEach(function (item) {
+            obj.emit('addto:' + name, item, obj);
+            obj.emit('change:' + name, arr, arr, obj);
+            obj.emit('change', name, arr, arr, obj);
+        });
         return result;
     };
 

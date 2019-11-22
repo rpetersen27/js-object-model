@@ -185,6 +185,47 @@ describe('Links', function () {
             onPlayerChangeGame.should.be.calledOnce;
         });
 
+        describe('unshift function', function () {
+
+            it('has basic support', function () {
+                var game = new Game(),
+                    player1 = new Player(),
+                    player2 = new Player();
+
+                game.players.should.have.length(0);
+
+                game.players.unshift(player1);
+
+                game.players.should.deep.equal([player1]);
+                player1.game.should.equal(game);
+
+                game.players.unshift(player2);
+                game.players.should.deep.equal([player2, player1]);
+                player2.game.should.equal(game);
+            });
+
+            it('fires events', function () {
+                var game = new Game(),
+                    player = new Player();
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    onGameAddPlayer = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('addto:players', onGameAddPlayer);
+
+                onGameChange.should.not.have.been.called;
+
+                game.players.unshift(player);
+
+                onGameChange.should.be.calledOnce;
+
+            });
+
+        });
+
     });
 
     describe('multiple to multiple link', function () {
