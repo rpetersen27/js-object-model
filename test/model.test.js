@@ -79,77 +79,61 @@ describe('Creates classes which', function () {
             .extend({ start: function () {} });
         var field = new Field();
         field.should.have.property('list');
-        field.should.have.property('getLists');
-        field.should.have.property('setLists');
-        field.should.have.property('addList');
-        field.should.have.property('removeList');
+        field.should.have.property('prev');
+        field.should.have.property('next');
+        field.should.have.property('pos');
+        field.should.have.property('list');
+        field.list.should.deep.equal([]);
         field.should.have.property('start');
     });
 
     describe('attributes', function () {
+        var Field;
 
-        it('has simple attributes', function () {
-            var Field = JOM.createClass('Field');
-            JOM.attribute(Field, 'pos', 'Number');
-            var field = new Field();
-            field.should.have.property('getPos');
-            field.should.have.property('setPos');
-            field.setPos(2);
-            field.getPos().should.equal(2);
+        beforeEach(function () {
+            Field = JOM.createClass('Field');
         });
 
-        it('has array attributes', function () {
-            var Field = JOM.createClass('Field');
-            JOM.attribute(Field, 'positions', 'Array');
-            var field = new Field();
-            field.should.have.property('positions');
-            field.should.have.property('getPositions');
-            field.should.have.property('setPositions');
-            field.should.have.property('addPositions');
-            field.should.have.property('removePositions');
-            field.should.have.property('hasPositions');
-            field.addPositions(2);
-            field.hasPositions(2).should.be.true;
-            field.getPositions().should.deep.equal([2]);
-            field.addPositions(5).removePositions(2);
-            field.getPositions().should.deep.equal([5]);
-            field.setPositions([3]);
-            field.getPositions().should.deep.equal([3]);
-        });
-
-        it('responds to events', function () {
-            var Field = JOM.createClass('Field');
+        it('responds to simple attribute events', function () {
             JOM.attribute(Field, 'pos', 'Number');
-            JOM.attribute(Field, 'positions', 'Array');
 
             var field = new Field(),
                 onChange = sinon.spy(),
-                onChangePos = sinon.spy(),
-                onChangePositions = sinon.spy(),
-                onAddPositions = sinon.spy(),
-                onRemovePositions = sinon.spy();
+                onChangePos = sinon.spy();
 
             field.on('change', onChange);
             field.on('change:pos', onChangePos);
-            field.on('change:positions', onChangePositions);
-            field.on('add:positions', onAddPositions);
-            field.on('remove:positions', onRemovePositions);
 
-            field.setPos(2);
+            field.pos = 2;
 
             onChange.should.be.calledOnce;
             onChangePos.should.be.calledOnce;
             onChange.reset();
             onChangePos.reset();
+        });
 
-            field.setPositions([1]);
+        it('responds to array attribute events', function () {
+            JOM.attribute(Field, 'positions', 'Array');
+
+            var field = new Field(),
+                onChange = sinon.spy(),
+                onChangePositions = sinon.spy(),
+                onAddPositions = sinon.spy(),
+                onRemovePositions = sinon.spy();
+
+            field.on('change', onChange);
+            field.on('change:positions', onChangePositions);
+            field.on('addto:positions', onAddPositions);
+            field.on('removefrom:positions', onRemovePositions);
+
+            field.positions = [1];
 
             onChange.should.be.calledOnce;
             onChangePositions.should.be.calledOnce;
             onChange.reset();
             onChangePositions.reset();
 
-            field.addPositions(2);
+            field.positions.push(2);
 
             onChange.should.be.calledOnce;
             onChangePositions.should.be.calledOnce;
@@ -158,7 +142,7 @@ describe('Creates classes which', function () {
             onChangePositions.reset();
             onAddPositions.reset();
 
-            field.removePositions(1);
+            field.positions.remove(1);
 
             onChange.should.be.calledOnce;
             onChangePositions.should.be.calledOnce;

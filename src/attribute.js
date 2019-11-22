@@ -1,70 +1,84 @@
 var util = require('./util');
 
 function simpleAttribute(Clazz, name) {
-    var getAttribute = util.toCamelcase('get', name),
-        setAttribute = util.toCamelcase('set', name);
-    Clazz.prototype[getAttribute] = function () {
-        return this[name];
+    Clazz.on('init', function (obj) {
+        var value;
+        Object.defineProperty(obj, name, {
+            get: function () {
+                return value;
+            },
+            set: function (newValue) {
+                var oldValue = value;
+                value = newValue;
+                if (oldValue !== newValue) {
+                    this.emit('change:' + name, value, oldValue, this);
+                    this.emit('change', name, value, oldValue, this);
+                }
+                return this;
+            },
+        });
+    });
+}
+
+function reactiveArray(obj, name, arr) {
+    // TODO arr.shift(), arr.pop(), arr.splice()
+
+    arr.push = function () {
+        var args = Array.prototype.slice.call(arguments).filter(function (item) {
+            return this.indexOf(item) < 0;
+        }.bind(this));
+        var result = Array.prototype.push.apply(this, args);
+        args.forEach(function (item) {
+            obj.emit('addto:' + name, item, obj);
+            obj.emit('change:' + name, arr, arr, obj);
+            obj.emit('change', name, arr, arr, obj);
+        });
+        return result;
     };
-    Clazz.prototype[setAttribute] = function (value) {
-        var oldValue = this[name];
-        this[name] = value;
-        if (oldValue !== value) {
-            this.emit('change:' + name, this[name], oldValue, this);
-            this.emit('change', name, this[name], oldValue, this);
-        }
-        return this;
+
+    arr.unshift = function () {
+        var args = Array.prototype.slice.call(arguments).filter(function (item) {
+            return this.indexOf(item) < 0;
+        }.bind(this));
+        var result = Array.prototype.unshift.apply(this, args);
+        args.forEach(function (item) {
+            obj.emit('addto:' + name, item, obj);
+            obj.emit('change:' + name, arr, arr, obj);
+            obj.emit('change', name, arr, arr, obj);
+        });
+        return result;
     };
+
+    arr.remove = function (item) {
+        var index = this.indexOf(item);
+        if (index < 0) return;
+        Array.prototype.splice.call(this, index, 1);
+        obj.emit('removefrom:' + name, item, obj);
+        obj.emit('change:' + name, arr, arr, obj);
+        obj.emit('change', name, arr, arr, obj);
+    };
+
+    return arr;
 }
 
 function arrayAttribute(Clazz, name) {
-    var getAttributes = util.pluralForm(util.toCamelcase('get', name)),
-        setAttributes = util.pluralForm(util.toCamelcase('set', name)),
-        addAttribute = util.toCamelcase('add', name),
-        removeAttribute = util.toCamelcase('remove', name),
-        hasAttribute = util.toCamelcase('has', name);
-
     Clazz.on('init', function (obj) {
-        obj[name] = [];
+        var value = reactiveArray(obj, name, []);
+        Object.defineProperty(obj, name, {
+            get: function () {
+                return value;
+            },
+            set: function (newValue) {
+                var oldValue = value;
+                if (oldValue !== newValue) {
+                    value = reactiveArray(obj, name, newValue);
+                    this.emit('change:' + name, value, oldValue, this);
+                    this.emit('change', name, value, oldValue, this);
+                }
+                return this;
+            },
+        });
     });
-
-    Clazz.prototype[getAttributes] = function () {
-        return this[name];
-    };
-    Clazz.prototype[setAttributes] = function (value) {
-        var oldValue = this[name];
-        this[name] = value;
-        if (oldValue !== value) {
-            this.emit('change:' + name, this[name], oldValue, this);
-            this.emit('change', name, this[name], oldValue, this);
-        }
-        return this;
-    };
-    Clazz.prototype[addAttribute] = function (value) {
-        if (!value) return;
-        var oldValue = this[name];
-        this[name] = [].concat(this[name]);
-        this[name].push(value);
-        this.emit('add:' + name, value, this);
-        this.emit('change:' + name, this[name], oldValue, this);
-        this.emit('change', name, this[name], oldValue, this);
-        return this;
-    };
-    Clazz.prototype[removeAttribute] = function (value) {
-        var index = this[name].indexOf(value);
-        if (index >= 0) {
-            var oldValue = this[name];
-            this[name] = [].concat(this[name]);
-            this[name].splice(index, 1);
-            this.emit('remove:' + name, value, this);
-            this.emit('change:' + name, this[name], oldValue, this);
-            this.emit('change', name, this[name], oldValue, this);
-        }
-        return this;
-    };
-    Clazz.prototype[hasAttribute] = function (value) {
-        return this[name].indexOf(value) >= 0;
-    };
 }
 
 module.exports = function (Clazz, name, type) {
