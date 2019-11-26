@@ -108,8 +108,8 @@ describe('Creates classes which', function () {
 
             onChange.should.be.calledOnce;
             onChangePos.should.be.calledOnce;
-            onChange.reset();
-            onChangePos.reset();
+            onChange.resetHistory();
+            onChangePos.resetHistory();
         });
 
         it('responds to array attribute events', function () {
@@ -130,17 +130,17 @@ describe('Creates classes which', function () {
 
             onChange.should.be.calledOnce;
             onChangePositions.should.be.calledOnce;
-            onChange.reset();
-            onChangePositions.reset();
+            onChange.resetHistory();
+            onChangePositions.resetHistory();
 
             field.positions.push(2);
 
             onChange.should.be.calledOnce;
             onChangePositions.should.be.calledOnce;
             onAddPositions.should.be.calledOnce;
-            onChange.reset();
-            onChangePositions.reset();
-            onAddPositions.reset();
+            onChange.resetHistory();
+            onChangePositions.resetHistory();
+            onAddPositions.resetHistory();
 
             field.positions.remove(1);
 

@@ -67,10 +67,10 @@ describe('Links', function () {
             onMapChange.should.be.calledOnce;
             onMapChangeGame.should.be.calledOnce;
 
-            onGameChange.reset();
-            onGameChangeMap.reset();
-            onMapChange.reset();
-            onMapChangeGame.reset();
+            onGameChange.resetHistory();
+            onGameChangeMap.resetHistory();
+            onMapChange.resetHistory();
+            onMapChangeGame.resetHistory();
 
             game.map = undefined;
 
@@ -169,11 +169,11 @@ describe('Links', function () {
             onPlayerChange.should.be.calledOnce;
             onPlayerChangeGame.should.be.calledOnce;
 
-            onGameChange.reset();
-            onGameAddPlayer.reset();
-            onGameChangePlayers.reset();
-            onPlayerChange.reset();
-            onPlayerChangeGame.reset();
+            onGameChange.resetHistory();
+            onGameAddPlayer.resetHistory();
+            onGameChangePlayers.resetHistory();
+            onPlayerChange.resetHistory();
+            onPlayerChangeGame.resetHistory();
 
             player.game = new Game();
 
