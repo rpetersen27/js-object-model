@@ -22,9 +22,7 @@ function simpleAttribute(Clazz, name) {
 
 function reactiveArray(obj, name, arr) {
     arr.push = function () {
-        var args = Array.prototype.slice.call(arguments).filter(function (item) {
-            return this.indexOf(item) < 0;
-        }.bind(this));
+        var args = Array.prototype.slice.call(arguments);
         var result = Array.prototype.push.apply(this, args);
         args.forEach(function (item) {
             obj.emit('addto:' + name, item, obj);
@@ -35,9 +33,7 @@ function reactiveArray(obj, name, arr) {
     };
 
     arr.unshift = function () {
-        var args = Array.prototype.slice.call(arguments).filter(function (item) {
-            return this.indexOf(item) < 0;
-        }.bind(this));
+        var args = Array.prototype.slice.call(arguments);
         var result = Array.prototype.unshift.apply(this, args);
         args.forEach(function (item) {
             obj.emit('addto:' + name, item, obj);
