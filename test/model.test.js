@@ -112,41 +112,173 @@ describe('Creates classes which', function () {
             onChangePos.resetHistory();
         });
 
-        it('responds to array attribute events', function () {
-            JOM.attribute(Field, 'positions', 'Array');
+        describe('arrays', function () {
 
-            var field = new Field(),
-                onChange = sinon.spy(),
-                onChangePositions = sinon.spy(),
-                onAddPositions = sinon.spy(),
-                onRemovePositions = sinon.spy();
+            beforeEach(function () {
+                JOM.attribute(Field, 'positions', 'Array');
+            });
 
-            field.on('change', onChange);
-            field.on('change:positions', onChangePositions);
-            field.on('addto:positions', onAddPositions);
-            field.on('removefrom:positions', onRemovePositions);
+            it('can init', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy();
 
-            field.positions = [1];
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
 
-            onChange.should.be.calledOnce;
-            onChangePositions.should.be.calledOnce;
-            onChange.resetHistory();
-            onChangePositions.resetHistory();
+                field.positions = [1];
 
-            field.positions.push(2);
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+            });
 
-            onChange.should.be.calledOnce;
-            onChangePositions.should.be.calledOnce;
-            onAddPositions.should.be.calledOnce;
-            onChange.resetHistory();
-            onChangePositions.resetHistory();
-            onAddPositions.resetHistory();
+            it('can push', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy(),
+                    onAddPositions = sinon.spy();
 
-            field.positions.remove(1);
+                field.positions = [1];
 
-            onChange.should.be.calledOnce;
-            onChangePositions.should.be.calledOnce;
-            onRemovePositions.should.be.calledOnce;
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+                field.on('addto:positions', onAddPositions);
+
+                field.positions.push(2);
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+                onAddPositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([1, 2]);
+            });
+
+            it('can remove', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy(),
+                    onRemovePositions = sinon.spy();
+
+                field.positions = [1, 2];
+
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+                field.on('removefrom:positions', onRemovePositions);
+
+                field.positions.remove(1);
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+                onRemovePositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([2]);
+            });
+
+            it('can unshift', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy(),
+                    onAddPositions = sinon.spy();
+
+                field.positions = [1];
+
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+                field.on('addto:positions', onAddPositions);
+
+                field.positions.unshift(2);
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+                onAddPositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([2, 1]);
+            });
+
+            it('can shift', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy(),
+                    onRemovePositions = sinon.spy();
+
+                field.positions = [1, 2];
+
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+                field.on('removefrom:positions', onRemovePositions);
+
+                field.positions.shift();
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+                onRemovePositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([2]);
+            });
+
+            it('can pop', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy(),
+                    onRemovePositions = sinon.spy();
+
+                field.positions = [1, 2];
+
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+                field.on('removefrom:positions', onRemovePositions);
+
+                field.positions.pop();
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+                onRemovePositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([1]);
+            });
+
+            it('can splice', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy(),
+                    onAddPositions = sinon.spy(),
+                    onRemovePositions = sinon.spy();
+
+                field.positions = [1, 2, 3];
+
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+                field.on('addto:positions', onAddPositions);
+                field.on('removefrom:positions', onRemovePositions);
+
+                field.positions.splice(1, 1, 4, 5);
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+                onAddPositions.should.be.calledTwice;
+                onRemovePositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([1, 4, 5, 3]);
+            });
+
+            it('can set', function () {
+                var field = new Field(),
+                    onChange = sinon.spy(),
+                    onChangePositions = sinon.spy();
+
+                field.positions = [1, 2, 3];
+
+                field.on('change', onChange);
+                field.on('change:positions', onChangePositions);
+
+                field.positions.set(1, 4);
+
+                onChange.should.be.calledOnce;
+                onChangePositions.should.be.calledOnce;
+
+                field.positions.should.deep.equal([1, 4, 3]);
+            });
+
         });
 
     });
