@@ -40,12 +40,13 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         var args = Array.prototype.slice.call(arguments).filter(function (item) {
             return this.indexOf(item) < 0;
         }.bind(this));
-        var result = Array.prototype.push.apply(this, args);
+        var baseIndex = arr.length,
+            result = Array.prototype.push.apply(this, args);
         args.forEach(function (item) {
             item[nameInv] = obj;
         }.bind(this));
-        args.forEach(function (item) {
-            obj.emit('addto:' + name, item, obj);
+        args.forEach(function (item, i) {
+            obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
         });
@@ -56,12 +57,13 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         var args = Array.prototype.slice.call(arguments).filter(function (item) {
             return this.indexOf(item) < 0;
         }.bind(this));
-        var result = Array.prototype.unshift.apply(this, args);
+        var baseIndex = arr.length,
+            result = Array.prototype.unshift.apply(this, args);
         args.forEach(function (item) {
             item[nameInv] = obj;
         }.bind(this));
-        args.forEach(function (item) {
-            obj.emit('addto:' + name, item, obj);
+        args.forEach(function (item, i) {
+            obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
         });
@@ -73,7 +75,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         if (index < 0) return;
         Array.prototype.splice.call(this, index, 1);
         item[nameInv] = undefined;
-        obj.emit('removefrom:' + name, item, obj);
+        obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
     };
@@ -136,12 +138,13 @@ function reactiveMultipleArray(obj, name, nameInv, arr) {
         var args = Array.prototype.slice.call(arguments).filter(function (item) {
             return this.indexOf(item) < 0;
         }.bind(this));
-        var result = Array.prototype.push.apply(this, args);
+        var baseIndex = arr.length,
+            result = Array.prototype.push.apply(this, args);
         args.forEach(function (item) {
             item[nameInv].push(obj);
         }.bind(this));
-        args.forEach(function (item) {
-            obj.emit('addto:' + name, item, obj);
+        args.forEach(function (item, i) {
+            obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
         })
@@ -153,7 +156,7 @@ function reactiveMultipleArray(obj, name, nameInv, arr) {
         if (index < 0) return;
         Array.prototype.splice.call(this, index, 1);
         item[nameInv].remove(obj);
-        obj.emit('removefrom:' + name, item, obj);
+        obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
     };

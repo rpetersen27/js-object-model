@@ -62,10 +62,10 @@ describe('Links', function () {
 
             map.game = game;
 
-            onGameChange.should.be.calledOnce;
-            onGameChangeMap.should.be.calledOnce;
-            onMapChange.should.be.calledOnce;
-            onMapChangeGame.should.be.calledOnce;
+            onGameChange.should.have.been.calledWith('map', map, undefined, game);
+            onGameChangeMap.should.have.been.calledWith(map, undefined, game);
+            onMapChange.should.have.been.calledWith('game', game, undefined, map);
+            onMapChangeGame.should.have.been.calledWith(game, undefined, map);
 
             onGameChange.resetHistory();
             onGameChangeMap.resetHistory();
@@ -74,10 +74,10 @@ describe('Links', function () {
 
             game.map = undefined;
 
-            onGameChange.should.be.calledOnce;
-            onGameChangeMap.should.be.calledOnce;
-            onMapChange.should.be.calledOnce;
-            onMapChangeGame.should.be.calledOnce;
+            onGameChange.should.have.been.calledWith('map', undefined, map, game);
+            onGameChangeMap.should.have.been.calledWith(undefined, map, game);
+            onMapChange.should.have.been.calledWith('game', undefined, game, map);
+            onMapChangeGame.should.have.been.calledWith(undefined, game, map);
         });
 
     });
@@ -162,12 +162,12 @@ describe('Links', function () {
 
             game.players.push(player);
 
-            onGameChange.should.be.calledOnce;
-            onGameAddPlayer.should.be.calledOnce;
+            onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+            onGameAddPlayer.should.have.been.calledWith(player, 0, game);
             onGameRemovePlayer.should.not.be.called;
-            onGameChangePlayers.should.be.calledOnce;
-            onPlayerChange.should.be.calledOnce;
-            onPlayerChangeGame.should.be.calledOnce;
+            onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+            onPlayerChange.should.have.been.calledWith('game', game, undefined, player);
+            onPlayerChangeGame.should.have.been.calledWith(game, undefined, player);
 
             onGameChange.resetHistory();
             onGameAddPlayer.resetHistory();
@@ -177,12 +177,12 @@ describe('Links', function () {
 
             player.game = new Game();
 
-            onGameChange.should.be.calledOnce;
+            onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
             onGameAddPlayer.should.not.be.called;
-            onGameRemovePlayer.should.be.calledOnce;
-            onGameChangePlayers.should.be.calledOnce;
-            onPlayerChange.should.be.calledOnce;
-            onPlayerChangeGame.should.be.calledOnce;
+            onGameRemovePlayer.should.have.been.calledWith(player, 0, game);
+            onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+            onPlayerChange.should.have.been.calledWith('game', player.game, game, player);
+            onPlayerChangeGame.should.have.been.calledWith(player.game, game, player);
         });
 
         describe('unshift function', function () {

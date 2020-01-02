@@ -106,8 +106,8 @@ describe('Creates classes which', function () {
 
             field.pos = 2;
 
-            onChange.should.be.calledOnce;
-            onChangePos.should.be.calledOnce;
+            onChange.should.have.been.calledWith('pos', 2, undefined, field);
+            onChangePos.should.have.been.calledWith(2, undefined, field);
             onChange.resetHistory();
             onChangePos.resetHistory();
         });
@@ -120,6 +120,7 @@ describe('Creates classes which', function () {
 
             it('can init', function () {
                 var field = new Field(),
+                    oldPositions = field.positions,
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy();
 
@@ -128,8 +129,8 @@ describe('Creates classes which', function () {
 
                 field.positions = [1];
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, oldPositions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, oldPositions, field);
             });
 
             it('can push', function () {
@@ -146,9 +147,9 @@ describe('Creates classes which', function () {
 
                 field.positions.push(2);
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
-                onAddPositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAddPositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1, 2]);
             });
@@ -167,9 +168,9 @@ describe('Creates classes which', function () {
 
                 field.positions.remove(1);
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
-                onRemovePositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onRemovePositions.should.have.been.calledWith(1, 0, field);
 
                 field.positions.should.deep.equal([2]);
             });
@@ -188,9 +189,9 @@ describe('Creates classes which', function () {
 
                 field.positions.unshift(2);
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
-                onAddPositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAddPositions.should.have.been.calledWith(2, 0, field);
 
                 field.positions.should.deep.equal([2, 1]);
             });
@@ -209,9 +210,9 @@ describe('Creates classes which', function () {
 
                 field.positions.shift();
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
-                onRemovePositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onRemovePositions.should.have.been.calledWith(1, 0, field);
 
                 field.positions.should.deep.equal([2]);
             });
@@ -230,9 +231,9 @@ describe('Creates classes which', function () {
 
                 field.positions.pop();
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
-                onRemovePositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onRemovePositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1]);
             });
@@ -253,10 +254,11 @@ describe('Creates classes which', function () {
 
                 field.positions.splice(1, 1, 4, 5);
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
                 onAddPositions.should.be.calledTwice;
-                onRemovePositions.should.be.calledOnce;
+                onAddPositions.should.have.been.calledWith(5, 2, field);
+                onRemovePositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1, 4, 5, 3]);
             });
@@ -264,17 +266,23 @@ describe('Creates classes which', function () {
             it('can set', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
-                    onChangePositions = sinon.spy();
+                    onChangePositions = sinon.spy(),
+                    onAddPositions = sinon.spy(),
+                    onRemovePositions = sinon.spy();
 
                 field.positions = [1, 2, 3];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('addto:positions', onAddPositions);
+                field.on('removefrom:positions', onRemovePositions);
 
                 field.positions.set(1, 4);
 
-                onChange.should.be.calledOnce;
-                onChangePositions.should.be.calledOnce;
+                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
+                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAddPositions.should.have.been.calledWith(4, 1);
+                onRemovePositions.should.have.been.calledWith(2, 1);
 
                 field.positions.should.deep.equal([1, 4, 3]);
             });
