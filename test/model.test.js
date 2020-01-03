@@ -257,7 +257,7 @@ describe('Creates classes which', function () {
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
                 onAddPositions.should.be.calledTwice;
-                onAddPositions.should.have.been.calledWith(5, 2, field);
+                onAddPositions.should.have.been.calledWith(4, 1, field);
                 onRemovePositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1, 4, 5, 3]);

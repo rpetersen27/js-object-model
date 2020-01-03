@@ -185,26 +185,9 @@ describe('Links', function () {
             onPlayerChangeGame.should.have.been.calledWith(player.game, game, player);
         });
 
-        describe('unshift function', function () {
+        describe('array functions', function () {
 
-            it('has basic support', function () {
-                var game = new Game(),
-                    player1 = new Player(),
-                    player2 = new Player();
-
-                game.players.should.have.length(0);
-
-                game.players.unshift(player1);
-
-                game.players.should.deep.equal([player1]);
-                player1.game.should.equal(game);
-
-                game.players.unshift(player2);
-                game.players.should.deep.equal([player2, player1]);
-                player2.game.should.equal(game);
-            });
-
-            it('fires events', function () {
+            it('push', function () {
                 var game = new Game(),
                     player = new Player();
 
@@ -216,11 +199,173 @@ describe('Links', function () {
                 game.on('change:players', onGameChangePlayers);
                 game.on('addto:players', onGameAddPlayer);
 
-                onGameChange.should.not.have.been.called;
+                game.players.push(player);
+
+                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameAddPlayer.should.have.been.calledWith(player, 0, game);
+                game.players.should.deep.equal([player]);
+                player.game.should.equal(game);
+            });
+
+            it('unshift', function () {
+                var game = new Game(),
+                    player = new Player();
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    onGameAddPlayer = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('addto:players', onGameAddPlayer);
 
                 game.players.unshift(player);
 
-                onGameChange.should.be.calledOnce;
+                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameAddPlayer.should.have.been.calledWith(player, 0, game);
+                game.players.should.deep.equal([player]);
+                player.game.should.equal(game);
+            });
+
+            it('remove', function () {
+                var game = new Game(),
+                    player = new Player();
+
+                game.players = [player];
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    removeFromPlayers = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('removefrom:players', removeFromPlayers);
+
+                game.players.remove(player);
+
+                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                removeFromPlayers.should.have.been.calledWith(player, 0);
+                game.players.should.deep.equal([]);
+                expect(player.game).to.be.undefined;
+            });
+
+            it('pop', function () {
+                var game = new Game(),
+                    player1 = new Player(),
+                    player2 = new Player();
+
+                game.players = [player1, player2];
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    removeFromPlayers = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('removefrom:players', removeFromPlayers);
+
+                game.players.pop();
+
+                onGameChange.should.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.been.calledWith(game.players, game.players, game);
+                removeFromPlayers.should.been.calledWith(player2, 1, game);
+                game.players.should.deep.equal([player1]);
+                expect(player2.game).to.be.undefined;
+                player1.game.should.equal(game);
+            });
+
+            it('shift', function () {
+                var game = new Game(),
+                    player1 = new Player(),
+                    player2 = new Player();
+
+                game.players = [player1, player2];
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    removeFromPlayers = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('removefrom:players', removeFromPlayers);
+
+                game.players.shift();
+
+                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                removeFromPlayers.should.have.been.calledWith(player1, 0, game);
+                game.players.should.deep.equal([player2]);
+                expect(player1.game).to.be.undefined;
+                player2.game.should.equal(game);
+            });
+
+            it('splice', function () {
+                var game = new Game(),
+                    player1 = new Player(),
+                    player2 = new Player(),
+                    player3 = new Player(),
+                    player4 = new Player(),
+                    player5 = new Player();
+
+                game.players = [player1, player2, player3];
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    addToPlayers = sinon.spy(),
+                    removeFromPlayers = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('addto:players', addToPlayers);
+                game.on('removefrom:players', removeFromPlayers);
+
+                game.players.splice(1, 1, player4, player5);
+
+                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                addToPlayers.should.be.calledTwice;
+                addToPlayers.should.have.been.calledWith(player4, 1, game);
+                removeFromPlayers.should.have.been.calledWith(player2, 1, game);
+                game.players.should.deep.equal([player1, player4, player5, player3]);
+                player1.game.should.equal(game);
+                expect(player2.game).to.be.undefined;
+                player3.game.should.equal(game);
+                player4.game.should.equal(game);
+                player5.game.should.equal(game);
+
+            });
+
+            it('set', function () {
+
+                var game = new Game(),
+                    player1 = new Player(),
+                    player2 = new Player();
+
+                game.players = [player1];
+
+                var onGameChange = sinon.spy(),
+                    onGameChangePlayers = sinon.spy(),
+                    addToPlayers = sinon.spy(),
+                    removeFromPlayers = sinon.spy();
+
+                game.on('change', onGameChange);
+                game.on('change:players', onGameChangePlayers);
+                game.on('addto:players', addToPlayers);
+                game.on('removefrom:players', removeFromPlayers);
+
+                game.players.set(0, player2);
+
+                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                addToPlayers.should.have.been.calledWith(player2, 0, game)
+                removeFromPlayers.should.have.been.calledWith(player1, 0, game);
+
+                game.players.should.deep.equal([player2]);
+                player2.game.should.equal(game);
+                expect(player1.game).to.be.undefined;
 
             });
 

@@ -36,8 +36,8 @@ function reactiveArray(obj, name, arr) {
     arr.unshift = function () {
         var args = Array.prototype.slice.call(arguments);
         var result = Array.prototype.unshift.apply(this, args);
-        args.forEach(function (item) {
-            obj.emit('addto:' + name, item, 0, obj);
+        args.forEach(function (item, i) {
+            obj.emit('addto:' + name, item, i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
         });
@@ -80,7 +80,7 @@ function reactiveArray(obj, name, arr) {
             deleteItems = arr.slice(start, start + deleteCount),
             i;
         Array.prototype.splice.apply(this, arguments);
-        for (i = 0; i < deleteItems.length; i++) {
+        for (i = deleteItems.length - 1; i >= 0; i--) {
             obj.emit('removefrom:' + name, deleteItems[i], start + i, obj);
         }
         for (i = 0; i < args.length; i++) {

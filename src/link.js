@@ -34,7 +34,7 @@ function oneToOne(from, to) {
 }
 
 function reactiveOneArray(obj, name, nameInv, arr) {
-    // TODO arr.shift(), arr.unshift(), arr.pop(), arr.splice()
+    // TODO type verification
 
     arr.push = function () {
         var args = Array.prototype.slice.call(arguments).filter(function (item) {
@@ -76,6 +76,68 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         Array.prototype.splice.call(this, index, 1);
         item[nameInv] = undefined;
         obj.emit('removefrom:' + name, item, index, obj);
+        obj.emit('change:' + name, arr, arr, obj);
+        obj.emit('change', name, arr, arr, obj);
+    };
+
+    arr.insertAt = function (index, item) {
+        if (arr.indexOf(item) >= 0) return false;
+        Array.prototype.splice.call(this, index, 0, item);
+        item[nameInv] = obj;
+        obj.emit('addto:' + name, item, index, obj);
+        return true;
+    };
+
+    arr.removeAt = function (index) {
+        var item = arr[index];
+        if (!item) return false;
+        Array.prototype.splice.call(this, index, 1);
+        item[nameInv] = undefined;
+        obj.emit('removefrom:' + name, item, index, obj);
+        return true;
+    };
+
+    arr.shift = function () {
+        var result = arr.removeAt(0);
+        obj.emit('change:' + name, arr, arr, obj);
+        obj.emit('change', name, arr, arr, obj);
+        return result;
+    };
+
+    arr.pop = function () {
+        var result = arr.removeAt(arr.length - 1);
+        obj.emit('change:' + name, arr, arr, obj);
+        obj.emit('change', name, arr, arr, obj);
+        return result;
+    };
+
+    arr.splice = function () {
+        var args = Array.prototype.slice.call(arguments),
+            start = args.shift(),
+            deleteCount = args.shift(),
+            i, changes = false;
+        for (i = deleteCount - 1; i >= 0; i--) {
+            changes = changes || arr.removeAt(start + i);
+        }
+        for (i = 0; i < args.length; i++) {
+            var res;
+            res = arr.insertAt(start + i, args[i]);
+            changes = changes || res;
+        }
+        if (!changes) return;
+        obj.emit('change:' + name, arr, arr, obj);
+        obj.emit('change', name, arr, arr, obj);
+    };
+
+    arr.set = function (index, value) {
+        if (value === this[index]) return;
+        var oldValue = this[index];
+        if (oldValue) {
+            arr.removeAt(index);
+        }
+        if (value) {
+            arr.insertAt(index, value);
+        }
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
     };
