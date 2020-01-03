@@ -22,8 +22,8 @@ function simpleAttribute(Clazz, name) {
 
 function reactiveArray(obj, name, arr) {
     arr.push = function () {
-        var args = Array.prototype.slice.call(arguments);
-        var baseIndex = arr.length,
+        var args = Array.prototype.slice.call(arguments),
+            baseIndex = arr.length,
             result = Array.prototype.push.apply(this, args);
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, baseIndex + i, obj);
@@ -34,8 +34,8 @@ function reactiveArray(obj, name, arr) {
     };
 
     arr.unshift = function () {
-        var args = Array.prototype.slice.call(arguments);
-        var result = Array.prototype.unshift.apply(this, args);
+        var args = Array.prototype.slice.call(arguments),
+            result = Array.prototype.unshift.apply(this, args);
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, i, obj);
             obj.emit('change:' + name, arr, arr, obj);
@@ -51,6 +51,7 @@ function reactiveArray(obj, name, arr) {
         obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
+        return item;
     };
 
     arr.shift = function () {
@@ -78,8 +79,8 @@ function reactiveArray(obj, name, arr) {
             start = args.shift(),
             deleteCount = args.shift(),
             deleteItems = arr.slice(start, start + deleteCount),
-            i;
-        Array.prototype.splice.apply(this, arguments);
+            i,
+            result = Array.prototype.splice.apply(this, arguments);
         for (i = deleteItems.length - 1; i >= 0; i--) {
             obj.emit('removefrom:' + name, deleteItems[i], start + i, obj);
         }
@@ -88,6 +89,7 @@ function reactiveArray(obj, name, arr) {
         }
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
+        return result;
     };
 
     arr.set = function (index, value) {

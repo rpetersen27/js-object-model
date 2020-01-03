@@ -78,6 +78,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
+        return item;
     };
 
     arr.insertAt = function (index, item) {
@@ -90,11 +91,11 @@ function reactiveOneArray(obj, name, nameInv, arr) {
 
     arr.removeAt = function (index) {
         var item = arr[index];
-        if (!item) return false;
+        if (!item) return;
         Array.prototype.splice.call(this, index, 1);
         item[nameInv] = undefined;
         obj.emit('removefrom:' + name, item, index, obj);
-        return true;
+        return item;
     };
 
     arr.shift = function () {
@@ -115,6 +116,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         var args = Array.prototype.slice.call(arguments),
             start = args.shift(),
             deleteCount = args.shift(),
+            deletedItems = arr.slice(start, start + deleteCount),
             i, changes = false;
         for (i = deleteCount - 1; i >= 0; i--) {
             changes = changes || arr.removeAt(start + i);
@@ -127,6 +129,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         if (!changes) return;
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
+        return deletedItems;
     };
 
     arr.set = function (index, value) {
