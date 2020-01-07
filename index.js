@@ -6,4 +6,5 @@ module.exports =  {
     extend: require('./src/extend'),
     inherit: require('./src/inherit'),
     attribute: require('./src/attribute'),
+    Library: require('./src/library'),
 };
