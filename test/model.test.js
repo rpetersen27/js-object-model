@@ -137,18 +137,21 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onAdd = sinon.spy(),
                     onAddPositions = sinon.spy();
 
                 field.positions = [1];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('addto', onAdd);
                 field.on('addto:positions', onAddPositions);
 
                 field.positions.push(2);
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAdd.should.have.been.calledWith('positions', 2, 1, field);
                 onAddPositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1, 2]);
@@ -158,18 +161,21 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onRemove = sinon.spy(),
                     onRemovePositions = sinon.spy();
 
                 field.positions = [1, 2];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('removefrom', onRemove);
                 field.on('removefrom:positions', onRemovePositions);
 
                 field.positions.remove(1);
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onRemove.should.have.been.calledWith('positions', 1, 0, field);
                 onRemovePositions.should.have.been.calledWith(1, 0, field);
 
                 field.positions.should.deep.equal([2]);
@@ -179,18 +185,21 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onAdd = sinon.spy(),
                     onAddPositions = sinon.spy();
 
                 field.positions = [1];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('addto', onAdd);
                 field.on('addto:positions', onAddPositions);
 
                 field.positions.unshift(2);
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAdd.should.have.been.calledWith('positions', 2, 0, field);
                 onAddPositions.should.have.been.calledWith(2, 0, field);
 
                 field.positions.should.deep.equal([2, 1]);
@@ -200,18 +209,21 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onRemove = sinon.spy(),
                     onRemovePositions = sinon.spy();
 
                 field.positions = [1, 2];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('removefrom', onRemove);
                 field.on('removefrom:positions', onRemovePositions);
 
                 field.positions.shift();
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onRemove.should.have.been.calledWith('positions', 1, 0, field);
                 onRemovePositions.should.have.been.calledWith(1, 0, field);
 
                 field.positions.should.deep.equal([2]);
@@ -221,18 +233,21 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onRemove = sinon.spy(),
                     onRemovePositions = sinon.spy();
 
                 field.positions = [1, 2];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('removefrom', onRemove);
                 field.on('removefrom:positions', onRemovePositions);
 
                 field.positions.pop();
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onRemove.should.have.been.calledWith('positions', 2, 1, field);
                 onRemovePositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1]);
@@ -242,22 +257,29 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onAdd = sinon.spy(),
                     onAddPositions = sinon.spy(),
+                    onRemove = sinon.spy(),
                     onRemovePositions = sinon.spy();
 
                 field.positions = [1, 2, 3];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('addto', onAdd);
                 field.on('addto:positions', onAddPositions);
+                field.on('removefrom', onRemove);
                 field.on('removefrom:positions', onRemovePositions);
 
                 field.positions.splice(1, 1, 4, 5);
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAdd.should.be.calledTwice;
+                onAdd.should.have.been.calledWith('positions', 4, 1, field);
                 onAddPositions.should.be.calledTwice;
                 onAddPositions.should.have.been.calledWith(4, 1, field);
+                onRemove.should.have.been.calledWith('positions', 2, 1, field);
                 onRemovePositions.should.have.been.calledWith(2, 1, field);
 
                 field.positions.should.deep.equal([1, 4, 5, 3]);
@@ -267,21 +289,27 @@ describe('Creates classes which', function () {
                 var field = new Field(),
                     onChange = sinon.spy(),
                     onChangePositions = sinon.spy(),
+                    onAdd = sinon.spy(),
                     onAddPositions = sinon.spy(),
+                    onRemove = sinon.spy(),
                     onRemovePositions = sinon.spy();
 
                 field.positions = [1, 2, 3];
 
                 field.on('change', onChange);
                 field.on('change:positions', onChangePositions);
+                field.on('addto', onAdd);
                 field.on('addto:positions', onAddPositions);
+                field.on('removefrom', onRemove);
                 field.on('removefrom:positions', onRemovePositions);
 
                 field.positions.set(1, 4);
 
                 onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
                 onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onAdd.should.have.been.calledWith('positions', 4, 1);
                 onAddPositions.should.have.been.calledWith(4, 1);
+                onRemove.should.have.been.calledWith('positions', 2, 1);
                 onRemovePositions.should.have.been.calledWith(2, 1);
 
                 field.positions.should.deep.equal([1, 4, 3]);
