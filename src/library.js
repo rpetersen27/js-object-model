@@ -8,8 +8,8 @@ function Library() {
 Library.prototype._attachListener = function (clazz) {
     var self = this;
     clazz.on('init', function (obj) {
-        self.events.emit('all', 'createClass', clazz.__name__, obj);
-        self.events.emit('createClass', clazz.__name__, obj);
+        self.events.emit('all', 'init', clazz.__name__, obj);
+        self.events.emit('init', clazz.__name__, obj);
 
         obj.on('change', function (name, val, old, obj) {
             self.events.emit('all', 'change', name, val, old, obj);

@@ -113,13 +113,13 @@ describe('Librarys', function () {
             const Game = lib.createClass('Game');
             const createClassListener = sinon.spy();
             const allListener = sinon.spy();
-            lib.on('createClass', createClassListener);
+            lib.on('init', createClassListener);
             lib.on('all', allListener);
 
             const game = new Game();
 
             createClassListener.should.have.been.calledWith('Game', game);
-            allListener.should.have.been.calledWith('createClass', 'Game', game);
+            allListener.should.have.been.calledWith('init', 'Game', game);
         });
 
         it('when a model value changes', function () {
