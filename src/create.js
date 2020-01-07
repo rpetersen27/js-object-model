@@ -10,6 +10,7 @@ module.exports = function (name) {
         '}'].join(' ');
     eval(code);
     func.__createdby__ = 'JOM';
+    func.__name__ = name;
     inherits(func, EventEmitter);
     func.on = function () {
         var args = Array.prototype.slice.call(arguments);

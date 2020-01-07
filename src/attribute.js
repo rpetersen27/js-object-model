@@ -26,6 +26,7 @@ function reactiveArray(obj, name, arr) {
             baseIndex = arr.length,
             result = Array.prototype.push.apply(this, args);
         args.forEach(function (item, i) {
+            obj.emit('addto', name, item, baseIndex + i, obj);
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
@@ -37,6 +38,7 @@ function reactiveArray(obj, name, arr) {
         var args = Array.prototype.slice.call(arguments),
             result = Array.prototype.unshift.apply(this, args);
         args.forEach(function (item, i) {
+            obj.emit('addto', name, item, i, obj);
             obj.emit('addto:' + name, item, i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
@@ -85,6 +87,7 @@ function reactiveArray(obj, name, arr) {
             obj.emit('removefrom:' + name, deleteItems[i], start + i, obj);
         }
         for (i = 0; i < args.length; i++) {
+            obj.emit('addto', name, args[i], start + i, obj);
             obj.emit('addto:' + name, args[i], start + i, obj);
         }
         obj.emit('change:' + name, arr, arr, obj);
@@ -97,6 +100,7 @@ function reactiveArray(obj, name, arr) {
         this[index] = value;
         obj.emit('change:' + name, arr, arr, obj);
         obj.emit('change', name, arr, arr, obj);
+        obj.emit('addto', name, value, index, obj);
         obj.emit('addto:' + name, value, index, obj);
         obj.emit('removefrom:' + name, oldValue, index, obj);
     };

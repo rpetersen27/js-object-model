@@ -12,6 +12,8 @@ describe('Librarys', function () {
         lib.should.have.property('extend');
         lib.should.have.property('inherit');
         lib.should.have.property('attribute');
+        lib.should.have.property('on');
+        lib.should.have.property('off');
     });
 
     it('can create classes', function () {
@@ -102,6 +104,58 @@ describe('Librarys', function () {
         const Game = lib.createClass('Game');
 
         expect(lib.inherit.bind(lib, Game, 'Game')).to.throw();
+    });
+
+    describe('throws events', function () {
+
+        it('when a model is created', function () {
+            const lib = new JOM.Library();
+            const Game = lib.createClass('Game');
+            const createClassListener = sinon.spy();
+            const allListener = sinon.spy();
+            lib.on('createClass', createClassListener);
+            lib.on('all', allListener);
+
+            const game = new Game();
+
+            createClassListener.should.have.been.calledWith('Game', game);
+            allListener.should.have.been.calledWith('createClass', 'Game', game);
+        });
+
+        it('when a model value changes', function () {
+            const lib = new JOM.Library();
+            const Game = lib.createClass('Game');
+            Game.attribute('pos', 'Number');
+            const changeListener = sinon.spy();
+            const allListener = sinon.spy();
+            const game = new Game();
+            lib.on('change', changeListener);
+            lib.on('all', allListener);
+
+            game.pos = 2;
+
+            changeListener.should.have.been.calledWith('pos', 2, undefined, game);
+            allListener.should.have.been.calledWith('change', 'pos', 2, undefined, game);
+        });
+
+        it('when a model is added to a list', function () {
+            const lib = new JOM.Library();
+            const Game = lib.createClass('Game');
+            const Player = lib.createClass('Player');
+            Game.link(Player, '1-*');
+            const addListener = sinon.spy();
+            const allListener = sinon.spy();
+            const game = new Game();
+            const player = new Player();
+            lib.on('addto', addListener);
+            lib.on('all', allListener);
+
+            game.players.push(player);
+
+            addListener.should.have.been.calledWith('players', player, 0, game);
+            allListener.should.have.been.calledThrice;
+        });
+
     });
 
 });

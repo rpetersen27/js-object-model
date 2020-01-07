@@ -46,6 +46,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
             item[nameInv] = obj;
         }.bind(this));
         args.forEach(function (item, i) {
+            obj.emit('addto', name, item, baseIndex + i, obj);
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
@@ -63,6 +64,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
             item[nameInv] = obj;
         }.bind(this));
         args.forEach(function (item, i) {
+            obj.emit('addto', name, item, baseIndex + i, obj);
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
@@ -85,6 +87,7 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         if (arr.indexOf(item) >= 0) return false;
         Array.prototype.splice.call(this, index, 0, item);
         item[nameInv] = obj;
+        obj.emit('addto', name, item, index, obj);
         obj.emit('addto:' + name, item, index, obj);
         return true;
     };
@@ -209,6 +212,7 @@ function reactiveMultipleArray(obj, name, nameInv, arr) {
             item[nameInv].push(obj);
         }.bind(this));
         args.forEach(function (item, i) {
+            obj.emit('addto', name, item, baseIndex + i, obj);
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('change:' + name, arr, arr, obj);
             obj.emit('change', name, arr, arr, obj);
