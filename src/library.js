@@ -20,6 +20,11 @@ Library.prototype._attachListener = function (clazz) {
             self.events.emit('all', 'addto', name, item, index, obj);
             self.events.emit('addto', name, item, index, obj);
         });
+
+        obj.on('removefrom', function (name, item, index, obj) {
+            self.events.emit('all', 'addto', name, item, index, obj);
+            self.events.emit('removefrom', name, item, index, obj);
+        });
     });
 };
 

@@ -156,6 +156,25 @@ describe('Librarys', function () {
             allListener.should.have.been.calledThrice;
         });
 
+        it('when a model is removed from a list', function () {
+            const lib = new JOM.Library();
+            const Game = lib.createClass('Game');
+            const Player = lib.createClass('Player');
+            Game.link(Player, '1-*');
+            const removeListener = sinon.spy();
+            const allListener = sinon.spy();
+            const game = new Game();
+            const player = new Player();
+            game.players.push(player);
+            lib.on('removefrom', removeListener);
+            lib.on('all', allListener);
+
+            game.players.remove(player);
+
+            removeListener.should.have.been.calledWith('players', player, 0, game);
+            allListener.should.have.been.calledThrice;
+        });
+
     });
 
 });
