@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const JOM = require('../index');
 
-describe.only('Librarys', function () {
+describe('Librarys', function () {
 
     it('has basic support', function () {
         const lib = new JOM.Library();
