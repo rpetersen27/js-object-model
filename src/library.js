@@ -1,13 +1,16 @@
-var EventEmitter = require('events').EventEmitter;
+var DataModel = require('./datamodel');
 
 function Library() {
-    this.initCounter = 0;
     this.__classes__ = {};
     this.__links__ = [];
     this.__attributes__ = [];
     this.__extensions__ = [];
-    this.events = new EventEmitter();
+    this.__datamodel__ = new DataModel();
 }
+
+Library.prototype.getDataModel = function () {
+    return this.__datamodel__;
+};
 
 Library.clone = function (obj) {
     if (obj === null || obj === undefined) return;
@@ -66,30 +69,8 @@ Library.prototype.fromJSON = function (str) {
     });
 };
 
-Library.prototype._attachToLibrary = function (clazz) {
+Library.prototype.__attachToLibrary__ = function (clazz) {
     var self = this;
-    clazz.on('init', function (obj) {
-        if (!obj.__id__) obj.__id__ = clazz.__name__ + '@' + self.initCounter++;
-
-        self.events.emit('all', 'init', clazz.__name__, obj);
-        self.events.emit('init', clazz.__name__, obj);
-
-        obj.on('change', function (name, val, old, obj) {
-            self.events.emit('all', 'change', name, val, old, obj);
-            self.events.emit('change', name, val, old, obj);
-        });
-
-        obj.on('addto', function (name, item, index, obj) {
-            self.events.emit('all', 'addto', name, item, index, obj);
-            self.events.emit('addto', name, item, index, obj);
-        });
-
-        obj.on('removefrom', function (name, item, index, obj) {
-            self.events.emit('all', 'addto', name, item, index, obj);
-            self.events.emit('removefrom', name, item, index, obj);
-        });
-    });
-
     clazz.link = function (from, to, relation) {
         if (typeof to === 'string') {
             relation = to;
@@ -108,35 +89,36 @@ Library.prototype._attachToLibrary = function (clazz) {
         self.extend(this, obj);
         return this;
     };
+    this.__datamodel__.registerClass(clazz);
 };
 
 Library.prototype.createClass = function (name) {
     if (this.__classes__[name]) throw new Error('Cannot create same class twice: ' + name);
     this.__classes__[name] = require('./create')(name);
-    this._attachToLibrary(this.__classes__[name]);
+    this.__attachToLibrary__(this.__classes__[name]);
     return this.__classes__[name];
 };
 
 Library.prototype.getClass = function (name) {
     if (this.__classes__[name]) return this.__classes__[name];
     this.__classes__[name] = require('./create')(name);
-    this._attachToLibrary(this.__classes__[name]);
+    this.__attachToLibrary__(this.__classes__[name]);
     return this.__classes__[name];
 };
 
 Library.prototype.inherit = function (Superclass, name) {
     if (this.__classes__[name]) throw new Error('Cannot create same class twice: ' + name);
     this.__classes__[name] = require('./inherit')(Superclass, name);
-    this._attachToLibrary(this.__classes__[name]);
+    this.__attachToLibrary__(this.__classes__[name]);
     return this.__classes__[name];
 };
 
 Library.prototype.on = function () {
-    this.events.on.apply(this.events, arguments);
+    this.__datamodel__.on.apply(this.__datamodel__, arguments);
 };
 
 Library.prototype.off = function () {
-    this.events.off.apply(this.events, arguments);
+    this.__datamodel__.off.apply(this.__datamodel__, arguments);
 };
 
 Library.prototype.attribute = function () {

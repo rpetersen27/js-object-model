@@ -376,4 +376,28 @@ describe('Librarys', function () {
 
     });
 
+    describe('provides a datamodel', function () {
+
+        it('has functions', function () {
+            const lib = new JOM.Library();
+            const datamodel = lib.getDataModel();
+
+            datamodel.should.have.property('registerClass');
+            datamodel.should.have.property('registerModel');
+            datamodel.should.have.property('on');
+            datamodel.should.have.property('off');
+            datamodel.should.have.property('getByID');
+
+        });
+
+        it('contains models', function () {
+            const lib = new JOM.Library();
+            const Game = lib.getClass('Game');
+            new Game();
+
+            const datamodel = lib.getDataModel();
+            expect(datamodel.getByID('Game@0')).not.to.be.undefined;
+        });
+    });
+
 });
