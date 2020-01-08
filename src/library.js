@@ -145,6 +145,7 @@ Library.prototype.attribute = function () {
     return require('./attribute').apply(null, args);
 }
 Library.prototype.link = function () {
+    // TODO check if both classes are inside this library
     var args = Array.prototype.slice.call(arguments);
     this.__links__.push(args);
     return require('./link').apply(null, args);
