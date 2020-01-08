@@ -38,6 +38,34 @@ Library.prototype.toJSON = function () {
     });
 };
 
+Library.prototype.fromJSON = function (str) {
+    var self = this,
+        model = JSON.parse(str);
+    model.classes.forEach(function (name) {
+        self.createClass(name);
+    });
+    // attributes
+    model.attributes.forEach(function (args) {
+        args[0] = self.getClass(args[0]);
+        self.attribute.apply(self, args);
+    });
+    // links
+    model.links.forEach(function (args) {
+        if (typeof args[0] === 'string') args[0] = self.getClass(args[0]);
+        else if (args[0].class) args[0].class = self.getClass(args[0].class);
+
+        if (typeof args[1] === 'string') args[1] = self.getClass(args[1]);
+        else if (args[1].class) args[1].class = self.getClass(args[1].class);
+
+        self.link.apply(self, args);
+    });
+    // extensions
+    model.extensions.forEach(function (args) {
+        args[0] = self.getClass(args[0]);
+        self.extend.apply(self, args);
+    });
+};
+
 Library.prototype._attachToLibrary = function (clazz) {
     var self = this;
     clazz.on('init', function (obj) {

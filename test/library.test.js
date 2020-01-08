@@ -15,6 +15,7 @@ describe('Librarys', function () {
         lib.should.have.property('on');
         lib.should.have.property('off');
         lib.should.have.property('toJSON');
+        lib.should.have.property('fromJSON');
     });
 
     it('can create classes', function () {
@@ -199,18 +200,18 @@ describe('Librarys', function () {
 
     });
 
+    function stringify(classes = [], attributes = [], links = [], extensions = []) {
+        return JSON.stringify({
+            classes,
+            attributes,
+            links,
+            extensions,
+        });
+    }
+
     describe('can export a datamodel', function () {
 
         describe('via lib.', function () {
-
-            function stringify(classes = [], attributes = [], links = [], extensions = []) {
-                return JSON.stringify({
-                    classes,
-                    attributes,
-                    links,
-                    extensions,
-                });
-            }
 
             it('should convert classes', function () {
                 const lib = new JOM.Library();
@@ -287,9 +288,9 @@ describe('Librarys', function () {
                 const lib = new JOM.Library();
                 const Game = lib.createClass('Game');
                 const Map = lib.createClass('Map');
-                Game.link({ arity: '1', name: 'linktomap' }, { class: Map, arity: '1', name: 'linktogame' });
+                Game.link({ arity: '1', name: 'linktogame' }, { class: Map, arity: '1', name: 'linktomap' });
 
-                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ arity: '1', name: 'linktomap', class: 'Game' }, { class: 'Map', arity: '1', name: 'linktogame' }, null]]));
+                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ arity: '1', name: 'linktogame', class: 'Game' }, { class: 'Map', arity: '1', name: 'linktomap' }, null]]));
             });
 
             it('should convert attributes', function () {
@@ -316,6 +317,61 @@ describe('Librarys', function () {
                 lib.toJSON().should.equal(stringify(['Game'], [], [], [['Game', {}]]));
             });
 
+        });
+
+    });
+
+    describe('creates library from json', function () {
+
+        it('parses classes', function () {
+            const lib = new JOM.Library();
+            lib.fromJSON(stringify(['Game']));
+
+            // check if class exists by listening to this error
+            expect(lib.createClass.bind(lib, 'Game')).to.throw();
+        });
+
+        it('parses attributes', function () {
+            const lib = new JOM.Library();
+            lib.fromJSON(stringify(['Game'], [['Game', 'running', 'boolean']]));
+
+            const Game = lib.getClass('Game');
+            const game = new Game();
+            game.should.have.property('running');
+        });
+
+        it('parses simple links', function () {
+            const lib = new JOM.Library();
+            lib.fromJSON(stringify(['Game', 'Player'], [], [['Game', 'Player', '1-1']]));
+
+            const Game = lib.getClass('Game');
+            const game = new Game();
+            const Player = lib.getClass('Player');
+            const player = new Player();
+            game.should.have.property('player');
+            player.should.have.property('game');
+        });
+
+        it('parses complex links', function () {
+            const lib = new JOM.Library();
+            lib.fromJSON(stringify(['Game', 'Player'], [], [[{ class: 'Game', arity: '1', name: 'linktogame' }, { class: 'Player', arity: '*', name: 'linktoplayers' }]]));
+
+            const Game = lib.getClass('Game');
+            const game = new Game();
+            const Player = lib.getClass('Player');
+            const player = new Player();
+
+            game.should.have.property('linktoplayers');
+            player.should.have.property('linktogame');
+        });
+
+        it('parses extensions', function () {
+            const lib = new JOM.Library();
+            lib.fromJSON(stringify(['Game'], [], [], [['Game', { test: '1' }]]));
+
+            const Game = lib.getClass('Game');
+            const game = new Game();
+            game.test.should.equal('1');
         });
 
     });
