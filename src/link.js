@@ -301,4 +301,5 @@ module.exports = function (from, to, relation) {
     else if (from.arity === '1' && to.arity === '*') return oneToMultiple(from, to);
     else if (from.arity === '*' && to.arity === '1') return oneToMultiple(to, from);
     else if (from.arity === '*' && to.arity === '*') return multipleToMultiple(from, to);
+    else throw new Error('Cannot create link from', from, to, relation);
 };
