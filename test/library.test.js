@@ -121,7 +121,9 @@ describe('Librarys', function () {
             const game = new Game();
 
             createClassListener.should.have.been.calledWith('Game', game);
+            createClassListener.should.have.been.calledOnce;
             allListener.should.have.been.calledWith('init', 'Game', game);
+            allListener.should.have.been.calledOnce;
         });
 
         it('when a model value changes', function () {
@@ -137,7 +139,9 @@ describe('Librarys', function () {
             game.pos = 2;
 
             changeListener.should.have.been.calledWith('pos', 2, undefined, game);
+            changeListener.should.have.been.calledOnce;
             allListener.should.have.been.calledWith('change', 'pos', 2, undefined, game);
+            allListener.should.have.been.calledOnce;
         });
 
         it('when a model is added to a list', function () {
@@ -397,6 +401,203 @@ describe('Librarys', function () {
 
             const datamodel = lib.getDataModel();
             expect(datamodel.getByID('Game@0')).not.to.be.undefined;
+        });
+
+        it('with clone function', function () {
+
+            const lib = new JOM.Library();
+            const Game = lib.createClass('Game');
+            const Map = lib.createClass('Map');
+            const Player = lib.createClass('Player');
+            Game.link(Map, '1-1');
+            Game.link(Player, '1-*');
+            Game.attribute('running', 'boolean');
+
+            const game = new Game();
+            const map = new Map();
+            const player1 = new Player();
+            const player2 = new Player();
+            game.map = map;
+            game.players.push(player1, player2);
+            game.running = true;
+
+            lib.getDataModel().clone(game).should.deep.equal({
+                map: 'Map@1',
+                players: ['Player@2', 'Player@3'],
+                running: true,
+            });
+
+        });
+
+        it('with clone function that works with inheritance', function () {
+            // TODO
+        });
+
+    });
+
+    describe('streams', function () {
+
+        it('the datamodel', function () {
+            const lib1 = new JOM.Library();
+            lib1.createClass('Game');
+
+            const lib2 = new JOM.Library();
+            lib2.toJSON().should.equal(stringify());
+
+            lib1.toStream(lib2.fromStream);
+
+            lib2.toJSON().should.equal(stringify(['Game']));
+        });
+
+        it('initial models', function () {
+            const lib1 = new JOM.Library();
+            const Game = lib1.createClass('Game');
+            new Game();
+
+            const lib2 = new JOM.Library();
+            expect(lib2.getDataModel().getByID('Game@0')).to.be.undefined;
+
+            lib1.toStream(lib2.fromStream);
+
+            expect(lib2.getDataModel().getByID('Game@0')).not.to.be.undefined;
+        });
+
+        it('model creations', function () {
+            const lib1 = new JOM.Library();
+            const Game = lib1.createClass('Game');
+
+            const lib2 = new JOM.Library();
+
+            lib1.toStream(lib2.fromStream);
+
+            expect(lib2.getDataModel().getByID('Game@0')).to.be.undefined;
+
+            new Game();
+
+            expect(lib2.getDataModel().getByID('Game@0')).not.to.be.undefined;
+        });
+
+        it('updates', function () {
+            const lib1 = new JOM.Library();
+            const Game = lib1.createClass('Game');
+            Game.attribute('running', 'boolean');
+
+            const gameInLib1 = new Game();
+            gameInLib1.running = false;
+
+            const lib2 = new JOM.Library();
+
+            lib1.toStream(lib2.fromStream);
+
+            const gameInLib2 = lib2.getDataModel().getByID('Game@0');
+            expect(gameInLib2).not.to.be.undefined;
+            gameInLib2.running.should.equal(false);
+
+            // update
+            gameInLib1.running = true;
+
+            gameInLib2.running.should.equal(true);
+        });
+
+        describe('links', function () {
+
+            it('intial', function () {
+                const lib1 = new JOM.Library();
+                const Game = lib1.createClass('Game');
+                const Map = lib1.createClass('Map');
+                Game.link(Map, '1-1');
+
+                const game = new Game();
+                const map = new Map();
+                game.map = map;
+
+                const lib2 = new JOM.Library();
+                lib1.toStream(lib2.fromStream);
+
+                const gameIn2 = lib2.getDataModel().get('Game@0');
+                const mapIn2 = lib2.getDataModel().get('Map@1');
+                gameIn2.map.should.equal(mapIn2);
+                mapIn2.game.should.equal(gameIn2);
+            });
+
+            it('one to one', function () {
+                const lib1 = new JOM.Library();
+                const Game = lib1.createClass('Game');
+                const Map = lib1.createClass('Map');
+                Map.link(Game, '1-1');
+
+                const game = new Game();
+                const map = new Map();
+
+                const lib2 = new JOM.Library();
+                lib1.toStream(lib2.fromStream);
+
+                const gameIn2 = lib2.getDataModel().get('Game@0');
+                const mapIn2 = lib2.getDataModel().get('Map@1');
+
+                expect(gameIn2.map).to.be.undefined;
+                expect(mapIn2.game).to.be.undefined;
+
+                game.map = map;
+
+                gameIn2.map.should.equal(mapIn2);
+                mapIn2.game.should.equal(gameIn2);
+
+            });
+
+            describe('one to many', function () {
+
+                it('add', function () {
+                    const lib1 = new JOM.Library();
+                    const Game = lib1.createClass('Game');
+                    const Player = lib1.createClass('Player');
+                    Game.link(Player, '1-*');
+
+                    const game = new Game();
+                    const player1 = new Player();
+                    const player2 = new Player();
+                    game.players.push(player1);
+
+                    const lib2 = new JOM.Library();
+                    lib1.toStream(lib2.fromStream);
+
+                    const gameIn2 = lib2.getDataModel().get('Game@0');
+                    const player1In2 = lib2.getDataModel().get('Player@1');
+                    const player2In2 = lib2.getDataModel().get('Player@2');
+
+                    gameIn2.players.should.deep.equal([player1In2]);
+
+                    game.players.push(player2);
+
+                    gameIn2.players.should.deep.equal([player1In2, player2In2]);
+                });
+
+                it('remove', function () {
+                    const lib1 = new JOM.Library();
+                    const Game = lib1.createClass('Game');
+                    const Player = lib1.createClass('Player');
+                    Game.link(Player, '1-*');
+
+                    const game = new Game();
+                    const player1 = new Player();
+                    const player2 = new Player();
+                    game.players.push(player1, player2);
+
+                    const lib2 = new JOM.Library();
+                    lib1.toStream(lib2.fromStream);
+
+                    const gameIn2 = lib2.getDataModel().get('Game@0');
+                    const player1In2 = lib2.getDataModel().get('Player@1');
+                    const player2In2 = lib2.getDataModel().get('Player@2');
+
+                    gameIn2.players.should.deep.equal([player1In2, player2In2]);
+
+                    game.players.remove(player1);
+
+                    gameIn2.players.should.deep.equal([player2In2]);
+                });
+            });
+
         });
     });
 

@@ -3,7 +3,8 @@ var EventEmitter = require('events').EventEmitter,
 
 module.exports = function (name) {
     var emitter = new EventEmitter(), func, code = [
-        'func = function ' + name + '() { ',
+        'func = function ' + name + '(id) { ',
+            'this.__id__ = id;',
             'EventEmitter.call(this);',
             'emitter.emit("init", this);',
             'if (this.initialize) this.initialize();',

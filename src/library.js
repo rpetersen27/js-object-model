@@ -5,8 +5,39 @@ function Library() {
     this.__links__ = [];
     this.__attributes__ = [];
     this.__extensions__ = [];
-    this.__datamodel__ = new DataModel();
+    this.__datamodel__ = new DataModel(this);
+
+    this.fromStream = this.fromStream.bind(this);
 }
+
+Library.prototype.toStream = function (cb) {
+    var self = this;
+    this.on('all', function () {
+        var args = Array.prototype.slice.call(arguments).map(function (arg) {
+            if (arg && arg.__id__) return arg.__id__;
+            if (arg && arg instanceof Array) return arg.map(function (a) {
+                if (a && a.__id__) return a.__id__;
+                return a;
+            });
+            return arg;
+        });
+        cb.apply(self, args);
+    });
+    cb('datamodel', this.toJSON());
+    cb('initial', this.getDataModel().toJSON());
+};
+
+Library.prototype.fromStream = function (event, src) {
+    switch (event) {
+        case 'datamodel':
+            this.fromJSON(src);
+            break;
+        default:
+            //forward to datamodel
+            this.__datamodel__.update.apply(this.__datamodel__, arguments);
+            break;
+    }
+};
 
 Library.prototype.getDataModel = function () {
     return this.__datamodel__;

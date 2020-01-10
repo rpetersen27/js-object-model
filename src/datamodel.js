@@ -1,9 +1,10 @@
 var EventEmitter = require('events').EventEmitter;
 
-function DataModel() {
+function DataModel(library) {
     this.__idCounter__ = 0;
     this.__cache__ = {};
     this.__events__ = new EventEmitter();
+    this.__library__ = library;
 }
 
 DataModel.prototype.registerClass = function (clazz) {
@@ -31,6 +32,111 @@ DataModel.prototype.registerClass = function (clazz) {
             self.__events__.emit('removefrom', name, item, index, obj);
         });
     });
+};
+
+DataModel.prototype.clone = (function () {
+    function clone(obj) {
+        if (obj === null || obj === undefined) return;
+
+        if (obj.__id__) return obj.__id__;
+
+        if (obj instanceof Array) {
+            return obj.map(clone);
+        }
+
+        if (typeof obj === 'object') {
+            var copy = {};
+            Object.keys(obj).forEach(function (key) {
+                if (key.indexOf('_') === 0) return;
+                copy[key] = clone(obj[key]);
+            });
+            return copy;
+        }
+
+        return obj;
+    };
+    return function (obj) {
+        // is a class
+        if (obj && obj.__id__) {
+            var copy = {};
+
+            Object.getOwnPropertyNames(obj).forEach(function (key) {
+                if (key.indexOf('_') === 0) return;
+                copy[key] = clone(obj[key]);
+            });
+
+            return copy;
+        }
+
+        return clone(obj);
+    };
+}());
+
+DataModel.prototype.toJSON = function () {
+    var json = {}, self = this;
+    Object.keys(this.__cache__).forEach(function (key) {
+        json[key] = self.clone(self.__cache__[key]);
+    });
+    return JSON.stringify(json);
+};
+
+DataModel.prototype.fromJSON = (function () {
+    function getOrCreate(datamodel, id) {
+        if (datamodel.__cache__[id]) return datamodel.__cache__[id];
+
+        var name = id.split('@')[0],
+            Clazz = datamodel.__library__.getClass(name);
+        return new Clazz(id);
+    }
+    return function (str) {
+        var data = JSON.parse(str), self = this;
+        // create all classes at first
+        Object.keys(data).forEach(function (objID) {
+            getOrCreate(self, objID);
+        });
+        // create all connections
+        Object.keys(data).forEach(function (objID) {
+            Object.keys(data[objID]).forEach(function (attr) {
+                var value = data[objID][attr];
+                if (value instanceof Array) {
+                    value = value.map(function (val) {
+                        return self.get(val) || val;
+                    });
+                } else {
+                    value = self.get(value) || value;
+                }
+                self.get(objID)[attr] = value;
+            });
+        });
+    };
+}());
+
+DataModel.prototype.get = function (id) {
+    return this.__cache__[id];
+};
+
+DataModel.prototype.update = function (event, a1, a2, a3, a4) {
+    var self = this;
+    switch(event) {
+        case 'initial':
+            this.fromJSON(a1);
+            break;
+        case 'init':
+            var Clazz = this.__library__.getClass(a1);
+            new Clazz(a2);
+            break;
+        case 'change':
+            var obj = this.get(a4), value;
+            if (a2 instanceof Array) {
+                value = a2.map(function (a) {
+                    return self.get(a) || a;
+                })
+            } else {
+                value = this.get(a2) || a2;
+            }
+            if (obj) obj[a1] = value;
+            break;
+    }
 };
 
 DataModel.prototype.registerModel = function (model) {
