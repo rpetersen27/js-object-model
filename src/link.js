@@ -1,5 +1,4 @@
-var util = require('./util'),
-    EventEmitter = require('events').EventEmitter;
+var util = require('./util');
 
 function defineProperty(clazz, name, nameInv) {
     clazz.on('init', function (obj) {

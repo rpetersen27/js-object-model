@@ -73,9 +73,16 @@ DataModel.prototype.clone = (function () {
 }());
 
 DataModel.prototype.toJSON = function () {
-    var json = {}, self = this;
+    var json = {}, self = this,
+        classes = self.__library__.__classes__;
     Object.keys(this.__cache__).forEach(function (key) {
+        var className = self.__cache__[key].__name__;
+        if (classes[className].options.client === false) return;
         json[key] = self.clone(self.__cache__[key]);
+        for (var attrName in json[key]) {
+            var attr = self.__library__.__attributes__[className + '@@@' + attrName];
+            if (attr && attr.options.client === false) delete json[key][attrName];
+        }
     });
     return JSON.stringify(json);
 };
