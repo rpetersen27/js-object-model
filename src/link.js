@@ -20,7 +20,7 @@ function defineProperty(clazz, name, nameInv) {
                 }
                 this.emit('change:' + name, value, oldValue, this);
                 this.emit('change', name, value, oldValue, this);
-            }
+            },
         });
     });
 }
@@ -268,33 +268,9 @@ function multipleToMultiple(from, to) {
 }
 
 module.exports = function (from, to, relation) {
-    if (from.__createdby__) from = { class: from };
-    if (to.__createdby__) to = { class: to };
-
-    if (relation) {
-        var arities = relation.split('-');
-        if (arities.length === 2) {
-            var data = arities[0].split(':');
-            if (data.length > 0) {
-                from.arity = data[0];
-                if (data.length === 2) from.name = data[1];
-            }
-            data = arities[1].split(':');
-            if (data.length > 0) {
-                to.arity = data[0];
-                if (data.length === 2) to.name = data[1];
-            }
-        }
-    }
-
-    if (!from.name) {
-        from.name = from.class.prototype.constructor.name.toLowerCase();
-        if (from.arity === '*') from.name = util.pluralForm(from.name);
-    }
-    if (!to.name) {
-        to.name = to.class.prototype.constructor.name.toLowerCase();
-        if (to.arity === '*') to.name = util.pluralForm(to.name);
-    }
+    const data = util.autocompleteLink(from, to, relation);
+    from = data.from;
+    to = data.to;
 
     if (from.arity === '1' && to.arity === '1') return oneToOne(from, to);
     else if (from.arity === '1' && to.arity === '*') return oneToMultiple(from, to);

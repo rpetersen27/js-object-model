@@ -80,8 +80,11 @@ DataModel.prototype.toJSON = function () {
         if (classes[className].options.client === false) return;
         json[key] = self.clone(self.__cache__[key]);
         for (var attrName in json[key]) {
-            var attr = self.__library__.__attributes__[className + '@@@' + attrName];
+            var linkId = className + '@@@' + attrName,
+                attr = self.__library__.__attributes__[linkId];
             if (attr && attr.options.client === false) delete json[key][attrName];
+            var link = self.__library__.__links__[linkId];
+            if (link && link.options.client === false) delete json[key][attrName];
         }
     });
     return JSON.stringify(json);

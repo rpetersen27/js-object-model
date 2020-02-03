@@ -1,8 +1,9 @@
-var DataModel = require('./datamodel');
+var DataModel = require('./datamodel'),
+    util = require('./util');
 
 function Library() {
     this.__classes__ = {};
-    this.__links__ = [];
+    this.__links__ = {};
     this.__attributes__ = {};
     this.__extensions__ = [];
     this.__datamodel__ = new DataModel(this);
@@ -14,8 +15,10 @@ Library.prototype.toStream = function (cb) {
     var self = this;
     this.on('all', function (event, a1, a2, a3, a4) {
         if (event === 'init' && self.__classes__[a1].options.client === false) return;
-        var attr = self.__attributes__[a4.__name__ + '@@@' + a1]
+        var attr = a4 && self.__attributes__[a4.__name__ + '@@@' + a1];
         if (attr && attr.options.client === false) return;
+        var link = a4 && self.__links__[a4.__name__ + '@@@' + a1];
+        if (link && link.options.client === false) return;
         var args = Array.prototype.slice.call(arguments).map(function (arg) {
             if (arg && arg.__id__) return arg.__id__;
             if (arg && arg instanceof Array) return arg.map(function (a) {
@@ -66,6 +69,20 @@ Library.clone = function (obj) {
     return obj;
 }
 
+Library.prototype.getUniqueLinks = function () {
+    var result = {};
+    for (var key in this.__links__) {
+        var obj = this.__links__[key],
+            args = obj.args,
+            from = args[0],
+            to = args[1],
+            id = from.class.__name__ + '@@@' + to.name + '@@@' + to.class.__name__;
+        if (result[id]) continue;
+        result[id] = obj;
+    }
+    return Object.values(result);
+};
+
 Library.prototype.toJSON = function () {
     return JSON.stringify({
         classes: Object.keys(this.__classes__).filter(function (key) {
@@ -76,7 +93,11 @@ Library.prototype.toJSON = function () {
         }).map(function (attr) {
             return Library.clone(attr.args);
         }),
-        links: Library.clone(this.__links__),
+        links: this.getUniqueLinks().filter(function (link) {
+            return link.options.client !== false;
+        }).map(function (link) {
+            return Library.clone(link.args);
+        }),
         extensions: Library.clone(this.__extensions__),
     });
 };
@@ -111,14 +132,15 @@ Library.prototype.fromJSON = function (str) {
 
 Library.prototype.__attachToLibrary__ = function (clazz) {
     var self = this;
-    clazz.link = function (from, to, relation) {
+    clazz.link = function (from, to, relation, options) {
         if (typeof to === 'string') {
+            options = relation;
             relation = to;
             to = from;
             from = {};
         }
         from.class = this;
-        self.link(from, to, relation);
+        self.link(from, to, relation, options);
         return this;
     };
     clazz.attribute = function (name, type, options) {
@@ -171,11 +193,21 @@ Library.prototype.attribute = function (Clazz, name, type, options) {
     };
     return require('./attribute')(Clazz, name, type);
 }
-Library.prototype.link = function () {
+Library.prototype.link = function (from, to, relation, options) {
+    if (!options && typeof relation !== 'string') {
+        options = relation;
+        relation = undefined;
+    }
+    options = options || {};
+    var data = util.autocompleteLink(from, to, relation);
+    from = data.from;
+    to = data.to;
+    this.__links__[from.class.__name__ + '@@@' + to.name] = this.__links__[to.class.__name__ + '@@@' + from.name] = {
+        args: [from, to],
+        options: options,
+    };
     // TODO check if both classes are inside this library
-    var args = Array.prototype.slice.call(arguments);
-    this.__links__.push(args);
-    return require('./link').apply(null, args);
+    return require('./link')(from, to);
 };
 Library.prototype.extend = function () {
     var args = Array.prototype.slice.call(arguments);

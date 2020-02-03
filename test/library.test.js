@@ -230,7 +230,7 @@ describe('Librarys', function () {
                 const Map = lib.createClass('Map');
                 lib.link(Game, Map, '1-1');
 
-                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [['Game', 'Map', '1-1']]));
+                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ class: 'Game', arity: '1', name: 'game' }, { class: 'Map', arity: '1', name: 'map' }]]));
             });
 
             it('should convert complex links', function () {
@@ -285,7 +285,7 @@ describe('Librarys', function () {
                 const Map = lib.createClass('Map');
                 Game.link(Map, '1-1');
 
-                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ class: 'Game', arity: '1', name: 'game' }, 'Map', '1-1']]));
+                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ class: 'Game', arity: '1', name: 'game' }, { class: 'Map', arity: '1', name: 'map' }]]));
             });
 
             it('should convert complex links', function () {
@@ -294,7 +294,7 @@ describe('Librarys', function () {
                 const Map = lib.createClass('Map');
                 Game.link({ arity: '1', name: 'linktogame' }, { class: Map, arity: '1', name: 'linktomap' });
 
-                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ arity: '1', name: 'linktogame', class: 'Game' }, { class: 'Map', arity: '1', name: 'linktomap' }, null]]));
+                lib.toJSON().should.equal(stringify(['Game', 'Map'], [], [[{ arity: '1', name: 'linktogame', class: 'Game' }, { class: 'Map', arity: '1', name: 'linktomap' }]]));
             });
 
             it('should convert attributes', function () {
