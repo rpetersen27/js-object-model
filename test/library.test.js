@@ -763,6 +763,235 @@ describe('Librarys', function () {
                 });
             });
 
+            describe('with client=function', function () {
+
+                it('the datamodel', function () {
+                    const lib1 = new JOM.Library();
+                    lib1.createClass('Game', { client: opt => opt.id === 2 });
+
+                    const lib2 = new JOM.Library();
+                    const lib3 = new JOM.Library();
+                    lib2.toJSON().should.equal(stringify());
+                    lib3.toJSON().should.equal(stringify());
+
+                    lib1.toStream(lib2.fromStream, { id: 1 });
+                    lib1.toStream(lib3.fromStream, { id: 2 });
+
+                    lib2.toJSON().should.equal(stringify([]));
+                    lib3.toJSON().should.equal(stringify(['Game']));
+                });
+
+                it('initial models', function () {
+                    const lib1 = new JOM.Library();
+                    const Game = lib1.createClass('Game', { client: opt => opt.id === 2 });
+                    new Game();
+
+                    const lib2 = new JOM.Library();
+                    const lib3 = new JOM.Library();
+                    expect(lib2.getDataModel().getByID('Game@0')).to.be.undefined;
+                    expect(lib3.getDataModel().getByID('Game@0')).to.be.undefined;
+
+                    lib1.toStream(lib2.fromStream, { id: 1 });
+                    lib1.toStream(lib3.fromStream, { id: 2 });
+
+                    expect(lib2.getDataModel().getByID('Game@0')).to.be.undefined;
+                    expect(lib3.getDataModel().getByID('Game@0')).not.to.be.undefined;
+                });
+
+                it('model creations', function () {
+                    const lib1 = new JOM.Library();
+                    const Game = lib1.createClass('Game', { client: opt => opt.id === 2 });
+
+                    const lib2 = new JOM.Library();
+                    const lib3 = new JOM.Library();
+
+                    lib1.toStream(lib2.fromStream, { id: 1 });
+                    lib1.toStream(lib3.fromStream, { id: 2 });
+
+                    expect(lib2.getDataModel().getByID('Game@0')).to.be.undefined;
+                    expect(lib3.getDataModel().getByID('Game@0')).to.be.undefined;
+
+                    new Game();
+
+                    expect(lib2.getDataModel().getByID('Game@0')).to.be.undefined;
+                    expect(lib3.getDataModel().getByID('Game@0')).not.to.be.undefined;
+                });
+
+                it('updates', function () {
+                    const lib1 = new JOM.Library();
+                    const Game = lib1.createClass('Game');
+                    Game.attribute('running', 'boolean', { client: opt => opt.id === 2 });
+
+                    const gameInLib1 = new Game();
+                    gameInLib1.running = false;
+
+                    const lib2 = new JOM.Library();
+                    const lib3 = new JOM.Library();
+
+                    lib1.toStream(lib2.fromStream, { id: 1 });
+                    lib1.toStream(lib3.fromStream, { id: 2 });
+
+                    const gameInLib2 = lib2.getDataModel().getByID('Game@0');
+                    const gameInLib3 = lib3.getDataModel().getByID('Game@0');
+                    expect(gameInLib2).not.to.be.undefined;
+                    expect(gameInLib2.running).to.be.undefined;
+                    expect(gameInLib3).not.to.be.undefined;
+                    gameInLib3.running.should.equal(false);
+
+                    // update
+                    gameInLib1.running = true;
+
+                    expect(gameInLib2.running).to.be.undefined;
+                    gameInLib3.running.should.equal(true);
+                });
+
+                describe('links', function () {
+
+                    it('initial with restricted link', function () {
+                        const lib1 = new JOM.Library();
+                        const Game = lib1.createClass('Game');
+                        const Map = lib1.createClass('Map');
+                        Game.link(Map, '1-1', { client: opt => opt.id === 2 });
+
+                        const game = new Game();
+                        const map = new Map();
+                        game.map = map;
+
+                        const lib2 = new JOM.Library();
+                        const lib3 = new JOM.Library();
+
+                        lib1.toStream(lib2.fromStream, { id: 1 });
+                        lib1.toStream(lib3.fromStream, { id: 2 });
+
+                        const gameIn2 = lib2.getDataModel().get('Game@0');
+                        const mapIn2 = lib2.getDataModel().get('Map@1');
+                        expect(gameIn2.map).to.be.undefined;
+                        expect(mapIn2.game).to.be.undefined;
+
+                        const gameIn3 = lib3.getDataModel().get('Game@0');
+                        const mapIn3 = lib3.getDataModel().get('Map@1');
+                        gameIn3.map.should.equal(mapIn3);
+                        mapIn3.game.should.equal(gameIn3);
+                    });
+
+                    it('initial with restricted class', function () {
+                        const lib1 = new JOM.Library();
+                        const Game = lib1.createClass('Game');
+                        const Map = lib1.createClass('Map', { client: opt => opt.id === 2 });
+                        Game.link(Map, '1-1');
+
+                        const game = new Game();
+                        const map = new Map();
+                        game.map = map;
+
+                        const lib2 = new JOM.Library();
+                        const lib3 = new JOM.Library();
+
+                        lib1.toStream(lib2.fromStream, { id: 1 });
+                        lib1.toStream(lib3.fromStream, { id: 2 });
+
+                        const gameIn2 = lib2.getDataModel().get('Game@0');
+                        const mapIn2 = lib2.getDataModel().get('Map@1');
+                        expect(gameIn2.map).to.be.undefined;
+                        expect(mapIn2).to.be.undefined;
+
+                        const gameIn3 = lib3.getDataModel().get('Game@0');
+                        const mapIn3 = lib3.getDataModel().get('Map@1');
+                        gameIn3.map.should.equal(mapIn3);
+                        mapIn3.game.should.equal(gameIn3);
+                    });
+
+                    it('add one to many with restricted link', function () {
+                        const lib1 = new JOM.Library();
+                        const Game = lib1.createClass('Game');
+                        const Player = lib1.createClass('Player');
+                        Game.link(Player, '1-*', { client: opt => opt.id === 2 });
+
+                        const game = new Game();
+                        const player1 = new Player();
+                        const player2 = new Player();
+                        game.players.push(player1);
+
+                        const lib2 = new JOM.Library();
+                        const lib3 = new JOM.Library();
+
+                        lib1.toStream(lib2.fromStream, { id: 1 });
+                        lib1.toStream(lib3.fromStream, { id: 2 });
+
+                        const gameIn2 = lib2.getDataModel().get('Game@0');
+                        const player1In2 = lib2.getDataModel().get('Player@1');
+                        const player2In2 = lib2.getDataModel().get('Player@2');
+
+                        expect(gameIn2.players).to.be.undefined;
+                        expect(player1In2.game).to.be.undefined;
+                        expect(player2In2.game).to.be.undefined;
+
+                        const gameIn3 = lib3.getDataModel().get('Game@0');
+                        const player1In3 = lib3.getDataModel().get('Player@1');
+                        const player2In3 = lib3.getDataModel().get('Player@2');
+
+                        gameIn3.players.should.deep.equal([player1In3]);
+                        player1In3.game.should.equal(gameIn3);
+                        expect(player2In3.game).to.be.undefined;
+
+                        game.players.push(player2);
+
+                        expect(gameIn2.players).to.be.undefined;
+                        expect(player1In2.game).to.be.undefined;
+                        expect(player2In2.game).to.be.undefined;
+
+                        gameIn3.players.should.deep.equal([player1In3, player2In3]);
+                        player1In3.game.should.equal(gameIn3);
+                        player2In3.game.should.equal(gameIn3);
+                    });
+
+                    it('add one to many with restricted class', function () {
+                        const lib1 = new JOM.Library();
+                        const Game = lib1.createClass('Game');
+                        const Player = lib1.createClass('Player', { client: opt => opt.id === 2 });
+                        Game.link(Player, '1-*');
+
+                        const game = new Game();
+                        const player1 = new Player();
+                        const player2 = new Player();
+                        game.players.push(player1);
+
+                        const lib2 = new JOM.Library();
+                        const lib3 = new JOM.Library();
+
+                        lib1.toStream(lib2.fromStream, { id: 1 });
+                        lib1.toStream(lib3.fromStream, { id: 2 });
+
+                        const gameIn2 = lib2.getDataModel().get('Game@0');
+                        const player1In2 = lib2.getDataModel().get('Player@1');
+                        const player2In2 = lib2.getDataModel().get('Player@2');
+
+                        expect(gameIn2.players).to.be.undefined;
+                        expect(player1In2).to.be.undefined;
+                        expect(player2In2).to.be.undefined;
+
+                        const gameIn3 = lib3.getDataModel().get('Game@0');
+                        const player1In3 = lib3.getDataModel().get('Player@1');
+                        const player2In3 = lib3.getDataModel().get('Player@2');
+
+                        gameIn3.players.should.deep.equal([player1In3]);
+                        player1In3.game.should.equal(gameIn3);
+                        expect(player2In3.game).to.be.undefined;
+
+                        game.players.push(player2);
+
+                        expect(gameIn2.players).to.be.undefined;
+                        expect(player1In2).to.be.undefined;
+                        expect(player2In2).to.be.undefined;
+
+                        gameIn3.players.should.deep.equal([player1In3, player2In3]);
+                        player1In3.game.should.equal(gameIn3);
+                        player2In3.game.should.equal(gameIn3);
+                    });
+
+                });
+            });
+
         });
     });
 

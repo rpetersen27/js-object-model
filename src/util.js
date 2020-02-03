@@ -55,4 +55,12 @@ module.exports = util = {
         return { from: from, to: to };
     },
 
+    trueFunc: function () {
+        return true;
+    },
+
+    falseFunc: function () {
+        return false;
+    },
+
 };

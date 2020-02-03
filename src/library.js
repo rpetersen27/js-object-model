@@ -1,6 +1,15 @@
 var DataModel = require('./datamodel'),
     util = require('./util');
 
+function makeOptions(options) {
+    options = Object.assign({}, options);
+
+    if (options.client === false) options.client = util.falseFunc;
+    else if (!options.client || options.client === true) options.client = util.trueFunc;
+
+    return options;
+}
+
 function Library() {
     this.__classes__ = {};
     this.__links__ = {};
@@ -11,14 +20,14 @@ function Library() {
     this.fromStream = this.fromStream.bind(this);
 }
 
-Library.prototype.toStream = function (cb) {
+Library.prototype.toStream = function (cb, clientOptions) {
     var self = this;
     this.on('all', function (event, a1, a2, a3, a4) {
-        if (event === 'init' && self.__classes__[a1].options.client === false) return;
+        if (event === 'init' && !self.__classes__[a1].options.client(clientOptions)) return;
         var attr = a4 && self.__attributes__[a4.__name__ + '@@@' + a1];
-        if (attr && attr.options.client === false) return;
+        if (attr && !attr.options.client(clientOptions)) return;
         var link = a4 && self.__links__[a4.__name__ + '@@@' + a1];
-        if (link && (link.options.client === false || self.__classes__[link.args[1].class.__name__].options.client === false)) return;
+        if (link && (!link.options.client(clientOptions) || !self.__classes__[link.args[1].class.__name__].options.client(clientOptions))) return;
         var args = Array.prototype.slice.call(arguments).map(function (arg) {
             if (arg && arg.__id__) return arg.__id__;
             if (arg && arg instanceof Array) return arg.map(function (a) {
@@ -29,8 +38,8 @@ Library.prototype.toStream = function (cb) {
         });
         cb.apply(self, args);
     });
-    cb('datamodel', this.toJSON());
-    cb('initial', this.getDataModel().toJSON());
+    cb('datamodel', this.toJSON(clientOptions));
+    cb('initial', this.getDataModel().toJSON(clientOptions));
 };
 
 Library.prototype.fromStream = function (event, src) {
@@ -83,19 +92,19 @@ Library.prototype.getUniqueLinks = function () {
     return Object.values(result);
 };
 
-Library.prototype.toJSON = function () {
+Library.prototype.toJSON = function (clientOptions) {
     var self = this;
     return JSON.stringify({
         classes: Object.keys(this.__classes__).filter(function (key) {
-            return this.__classes__[key].options.client !== false;
+            return this.__classes__[key].options.client(clientOptions);
         }.bind(this)),
         attributes: Object.values(this.__attributes__).filter(function (attr) {
-            return attr.options.client !== false;
+            return attr.options.client(clientOptions);
         }).map(function (attr) {
             return Library.clone(attr.args);
         }),
         links: this.getUniqueLinks().filter(function (link) {
-            return link.options.client !== false && self.__classes__[link.args[1].class.__name__].options.client !== false;
+            return link.options.client(clientOptions) && self.__classes__[link.args[1].class.__name__].options.client(clientOptions);
         }).map(function (link) {
             return Library.clone(link.args);
         }),
@@ -156,7 +165,7 @@ Library.prototype.__attachToLibrary__ = function (clazz) {
 };
 
 Library.prototype.createClass = function (name, options) {
-    options = options || {};
+    options = makeOptions(options);
     if (this.__classes__[name]) throw new Error('Cannot create same class twice: ' + name);
     this.__classes__[name] = {
         clazz: require('./create')(name),
@@ -187,7 +196,7 @@ Library.prototype.off = function () {
 };
 
 Library.prototype.attribute = function (Clazz, name, type, options) {
-    options = options || {};
+    options = makeOptions(options);
     this.__attributes__[Clazz.__name__ + '@@@' + name] = {
         args: [Clazz, name, type],
         options: options,
@@ -199,7 +208,7 @@ Library.prototype.link = function (from, to, relation, options) {
         options = relation;
         relation = undefined;
     }
-    options = options || {};
+    options = makeOptions(options);
     var data = util.autocompleteLink(from, to, relation);
     from = data.from;
     to = data.to;
