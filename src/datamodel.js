@@ -84,7 +84,7 @@ DataModel.prototype.toJSON = function () {
                 attr = self.__library__.__attributes__[linkId];
             if (attr && attr.options.client === false) delete json[key][attrName];
             var link = self.__library__.__links__[linkId];
-            if (link && link.options.client === false) delete json[key][attrName];
+            if (link && (link.options.client === false || classes[link.args[1].class.__name__].options.client === false)) delete json[key][attrName];
         }
     });
     return JSON.stringify(json);

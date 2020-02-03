@@ -18,7 +18,7 @@ Library.prototype.toStream = function (cb) {
         var attr = a4 && self.__attributes__[a4.__name__ + '@@@' + a1];
         if (attr && attr.options.client === false) return;
         var link = a4 && self.__links__[a4.__name__ + '@@@' + a1];
-        if (link && link.options.client === false) return;
+        if (link && (link.options.client === false || self.__classes__[link.args[1].class.__name__].options.client === false)) return;
         var args = Array.prototype.slice.call(arguments).map(function (arg) {
             if (arg && arg.__id__) return arg.__id__;
             if (arg && arg instanceof Array) return arg.map(function (a) {
@@ -84,6 +84,7 @@ Library.prototype.getUniqueLinks = function () {
 };
 
 Library.prototype.toJSON = function () {
+    var self = this;
     return JSON.stringify({
         classes: Object.keys(this.__classes__).filter(function (key) {
             return this.__classes__[key].options.client !== false;
@@ -94,7 +95,7 @@ Library.prototype.toJSON = function () {
             return Library.clone(attr.args);
         }),
         links: this.getUniqueLinks().filter(function (link) {
-            return link.options.client !== false;
+            return link.options.client !== false && self.__classes__[link.args[1].class.__name__].options.client !== false;
         }).map(function (link) {
             return Library.clone(link.args);
         }),
