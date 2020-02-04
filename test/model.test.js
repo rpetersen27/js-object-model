@@ -149,8 +149,8 @@ describe('Creates classes which', function () {
 
                 field.positions.push(2);
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;
+                onChangePositions.should.not.have.been.called;
                 onAdd.should.have.been.calledWith('positions', 2, 1, field);
                 onAddPositions.should.have.been.calledWith(2, 1, field);
 
@@ -173,8 +173,8 @@ describe('Creates classes which', function () {
 
                 field.positions.remove(1);
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;
+                onChangePositions.should.not.have.been.called;
                 onRemove.should.have.been.calledWith('positions', 1, 0, field);
                 onRemovePositions.should.have.been.calledWith(1, 0, field);
 
@@ -197,8 +197,8 @@ describe('Creates classes which', function () {
 
                 field.positions.unshift(2);
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;
+                onChangePositions.should.not.have.been.called;
                 onAdd.should.have.been.calledWith('positions', 2, 0, field);
                 onAddPositions.should.have.been.calledWith(2, 0, field);
 
@@ -221,8 +221,8 @@ describe('Creates classes which', function () {
 
                 field.positions.shift();
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;
+                onChangePositions.should.not.have.been.called;
                 onRemove.should.have.been.calledWith('positions', 1, 0, field);
                 onRemovePositions.should.have.been.calledWith(1, 0, field);
 
@@ -245,8 +245,8 @@ describe('Creates classes which', function () {
 
                 field.positions.pop();
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;
+                onChangePositions.should.not.have.been.called;
                 onRemove.should.have.been.calledWith('positions', 2, 1, field);
                 onRemovePositions.should.have.been.calledWith(2, 1, field);
 
@@ -273,8 +273,8 @@ describe('Creates classes which', function () {
 
                 field.positions.splice(1, 1, 4, 5);
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;;
+                onChangePositions.should.not.have.been.called;;
                 onAdd.should.be.calledTwice;
                 onAdd.should.have.been.calledWith('positions', 4, 1, field);
                 onAddPositions.should.be.calledTwice;
@@ -296,8 +296,6 @@ describe('Creates classes which', function () {
 
                 field.positions = [1, 2, 3];
 
-                field.on('change', onChange);
-                field.on('change:positions', onChangePositions);
                 field.on('addto', onAdd);
                 field.on('addto:positions', onAddPositions);
                 field.on('removefrom', onRemove);
@@ -305,8 +303,8 @@ describe('Creates classes which', function () {
 
                 field.positions.set(1, 4);
 
-                onChange.should.have.been.calledWith('positions', field.positions, field.positions, field);
-                onChangePositions.should.have.been.calledWith(field.positions, field.positions, field);
+                onChange.should.not.have.been.called;
+                onChangePositions.should.not.have.been.called;
                 onAdd.should.have.been.calledWith('positions', 4, 1);
                 onAddPositions.should.have.been.calledWith(4, 1);
                 onRemove.should.have.been.calledWith('positions', 2, 1);

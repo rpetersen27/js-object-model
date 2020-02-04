@@ -166,12 +166,12 @@ describe('Links', function () {
 
             game.players.push(player);
 
-            onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+            onGameChange.should.not.have.been.called;
             onAdd.should.have.been.calledWith('players', player, 0, game);
             onGameAddPlayer.should.have.been.calledWith(player, 0, game);
             onRemove.should.not.be.called;
             onGameRemovePlayer.should.not.be.called;
-            onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+            onGameChangePlayers.should.not.have.been.called;
             onPlayerChange.should.have.been.calledWith('game', game, undefined, player);
             onPlayerChangeGame.should.have.been.calledWith(game, undefined, player);
 
@@ -184,12 +184,12 @@ describe('Links', function () {
 
             player.game = new Game();
 
-            onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
+            onGameChange.should.not.have.been.called;
             onAdd.should.not.be.called;
             onGameAddPlayer.should.not.be.called;
             onRemove.should.have.been.calledWith('players', player, 0, game);
             onGameRemovePlayer.should.have.been.calledWith(player, 0, game);
-            onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+            onGameChangePlayers.should.not.have.been.called;
             onPlayerChange.should.have.been.calledWith('game', player.game, game, player);
             onPlayerChangeGame.should.have.been.calledWith(player.game, game, player);
         });
@@ -212,8 +212,8 @@ describe('Links', function () {
 
                 game.players.push(player);
 
-                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onAdd.should.have.been.calledWith('players', player, 0, game);
                 onGameAddPlayer.should.have.been.calledWith(player, 0, game);
                 game.players.should.deep.equal([player]);
@@ -236,8 +236,8 @@ describe('Links', function () {
 
                 game.players.unshift(player);
 
-                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onAdd.should.have.been.calledWith('players', player, 0, game);
                 onGameAddPlayer.should.have.been.calledWith(player, 0, game);
                 game.players.should.deep.equal([player]);
@@ -262,8 +262,8 @@ describe('Links', function () {
 
                 game.players.remove(player);
 
-                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onRemove.should.have.been.calledWith('players', player, 0);
                 onRemoveFromPlayers.should.have.been.calledWith(player, 0);
                 game.players.should.deep.equal([]);
@@ -289,8 +289,8 @@ describe('Links', function () {
 
                 game.players.pop();
 
-                onGameChange.should.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onRemove.should.been.calledWith('players', player2, 1, game);
                 onRemoveFromPlayers.should.been.calledWith(player2, 1, game);
                 game.players.should.deep.equal([player1]);
@@ -317,8 +317,8 @@ describe('Links', function () {
 
                 game.players.shift();
 
-                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onRemove.should.have.been.calledWith('players', player1, 0, game);
                 onRemoveFromPlayers.should.have.been.calledWith(player1, 0, game);
                 game.players.should.deep.equal([player2]);
@@ -352,8 +352,8 @@ describe('Links', function () {
 
                 game.players.splice(1, 1, player4, player5);
 
-                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onAdd.should.be.calledTwice;
                 onAdd.should.have.been.calledWith('players', player4, 1, game);
                 onAddToPlayers.should.be.calledTwice;
@@ -393,8 +393,8 @@ describe('Links', function () {
 
                 game.players.set(0, player2);
 
-                onGameChange.should.have.been.calledWith('players', game.players, game.players, game);
-                onGameChangePlayers.should.have.been.calledWith(game.players, game.players, game);
+                onGameChange.should.not.have.been.called;
+                onGameChangePlayers.should.not.have.been.called;
                 onAdd.should.have.been.calledWith('players', player2, 0, game);
                 onAddToPlayers.should.have.been.calledWith(player2, 0, game);
                 onRemove.should.have.been.calledWith('players', player1, 0, game);
@@ -465,19 +465,33 @@ describe('Links', function () {
                 onChangeCell1 = sinon.spy(),
                 onChangeCell1Neighbor = sinon.spy(),
                 onChangeCell2 = sinon.spy(),
-                onChangeCell2InvNeighbor = sinon.spy();
+                onChangeCell2InvNeighbor = sinon.spy(),
+                onAddCell1 = sinon.spy(),
+                onAddCell1Neighbor = sinon.spy(),
+                onAddCell2 = sinon.spy()
+                onAddCell2Neighbor = sinon.spy();
 
             cell1.on('change', onChangeCell1);
             cell1.on('change:neighbors', onChangeCell1Neighbor);
+            cell1.on('addto', onAddCell1);
+            cell1.on('addto:neighbors', onAddCell1Neighbor);
             cell2.on('change', onChangeCell2);
             cell2.on('change:invNeighbors', onChangeCell2InvNeighbor);
+            cell2.on('addto', onAddCell2);
+            cell2.on('addto:invNeighbors', onAddCell2Neighbor);
+
 
             cell1.neighbors.push(cell2);
 
-            onChangeCell1.should.be.calledOnce;
-            onChangeCell1Neighbor.should.be.calledOnce;
-            onChangeCell2.should.be.calledOnce;
-            onChangeCell2InvNeighbor.should.be.calledOnce;
+            onChangeCell1.should.not.have.been.called;
+            onChangeCell1Neighbor.should.not.have.been.called;
+            onChangeCell2.should.not.have.been.called;
+            onChangeCell2InvNeighbor.should.not.have.been.called;
+
+            onAddCell1.should.have.been.calledOnce;
+            onAddCell1Neighbor.should.have.been.calledOnce;
+            onAddCell2.should.have.been.calledOnce;
+            onAddCell2Neighbor.should.have.been.calledOnce;
 
         });
 

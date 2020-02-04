@@ -47,8 +47,6 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('addto', name, item, baseIndex + i, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         });
         return result;
     };
@@ -65,8 +63,6 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('addto', name, item, baseIndex + i, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         });
         return result;
     };
@@ -78,8 +74,6 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         item[nameInv] = undefined;
         obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('removefrom', name, item, index, obj);
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
         return item;
     };
 
@@ -103,17 +97,11 @@ function reactiveOneArray(obj, name, nameInv, arr) {
     };
 
     arr.shift = function () {
-        var result = arr.removeAt(0);
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
-        return result;
+        return arr.removeAt(0);
     };
 
     arr.pop = function () {
-        var result = arr.removeAt(arr.length - 1);
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
-        return result;
+        return arr.removeAt(arr.length - 1);
     };
 
     arr.splice = function () {
@@ -131,8 +119,6 @@ function reactiveOneArray(obj, name, nameInv, arr) {
             changes = changes || res;
         }
         if (!changes) return;
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
         return deletedItems;
     };
 
@@ -145,8 +131,6 @@ function reactiveOneArray(obj, name, nameInv, arr) {
         if (value) {
             arr.insertAt(index, value);
         }
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
     };
 
     return arr;
@@ -215,8 +199,6 @@ function reactiveMultipleArray(obj, name, nameInv, arr) {
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('addto', name, item, baseIndex + i, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         })
         return result;
     };
@@ -228,8 +210,6 @@ function reactiveMultipleArray(obj, name, nameInv, arr) {
         item[nameInv].remove(obj);
         obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('removefrom', name, item, index, obj);
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
     };
 
     return arr;

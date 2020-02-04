@@ -159,7 +159,7 @@ describe('Librarys', function () {
             game.players.push(player);
 
             addListener.should.have.been.calledWith('players', player, 0, game);
-            allListener.should.have.been.calledThrice;
+            allListener.should.have.been.calledTwice;
         });
 
         it('when a model is removed from a list', function () {
@@ -178,7 +178,7 @@ describe('Librarys', function () {
             game.players.remove(player);
 
             removeListener.should.have.been.calledWith('players', player, 0, game);
-            allListener.should.have.been.calledThrice;
+            allListener.should.have.been.calledTwice;
         });
 
     });
@@ -594,6 +594,7 @@ describe('Librarys', function () {
 
                     game.players.remove(player1);
 
+                    game.players.should.deep.equal([player2]);
                     gameIn2.players.should.deep.equal([player2In2]);
                 });
             });

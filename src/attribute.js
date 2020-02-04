@@ -28,8 +28,6 @@ function reactiveArray(obj, name, arr) {
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, baseIndex + i, obj);
             obj.emit('addto', name, item, baseIndex + i, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         });
         return result;
     };
@@ -40,8 +38,6 @@ function reactiveArray(obj, name, arr) {
         args.forEach(function (item, i) {
             obj.emit('addto:' + name, item, i, obj);
             obj.emit('addto', name, item, i, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         });
         return result;
     };
@@ -52,8 +48,6 @@ function reactiveArray(obj, name, arr) {
         Array.prototype.splice.call(this, index, 1);
         obj.emit('removefrom:' + name, item, index, obj);
         obj.emit('removefrom', name, item, index, obj);
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
         return item;
     };
 
@@ -62,8 +56,6 @@ function reactiveArray(obj, name, arr) {
         if (result !== undefined) {
             obj.emit('removefrom:' + name, result, 0, obj);
             obj.emit('removefrom', name, result, 0, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         }
         return result;
     };
@@ -73,8 +65,6 @@ function reactiveArray(obj, name, arr) {
         if (result !== undefined) {
             obj.emit('removefrom:' + name, result, arr.length, obj);
             obj.emit('removefrom', name, result, arr.length, obj);
-            obj.emit('change:' + name, arr, arr, obj);
-            obj.emit('change', name, arr, arr, obj);
         }
         return result;
     };
@@ -94,16 +84,12 @@ function reactiveArray(obj, name, arr) {
             obj.emit('addto:' + name, args[i], start + i, obj);
             obj.emit('addto', name, args[i], start + i, obj);
         }
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
         return result;
     };
 
     arr.set = function (index, value) {
         var oldValue = this[index];
         this[index] = value;
-        obj.emit('change:' + name, arr, arr, obj);
-        obj.emit('change', name, arr, arr, obj);
         obj.emit('addto:' + name, value, index, obj);
         obj.emit('addto', name, value, index, obj);
         obj.emit('removefrom:' + name, oldValue, index, obj);

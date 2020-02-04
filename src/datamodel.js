@@ -28,7 +28,7 @@ DataModel.prototype.registerClass = function (clazz) {
         });
 
         obj.on('removefrom', function (name, item, index, obj) {
-            self.__events__.emit('all', 'addto', name, item, index, obj);
+            self.__events__.emit('all', 'removefrom', name, item, index, obj);
             self.__events__.emit('removefrom', name, item, index, obj);
         });
     });
@@ -134,6 +134,14 @@ DataModel.prototype.update = function (event, a1, a2, a3, a4) {
         case 'init':
             var Clazz = this.__library__.getClass(a1);
             new Clazz(a2);
+            break;
+        case 'addto':
+            var obj = this.get(a4), target = this.get(a2);
+            obj[a1].push(target);
+            break;
+        case 'removefrom':
+            var obj = this.get(a4), target = this.get(a2);
+            obj[a1].remove(target);
             break;
         case 'change':
             var obj = this.get(a4), value;
