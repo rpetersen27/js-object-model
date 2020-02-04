@@ -990,6 +990,55 @@ describe('Librarys', function () {
                         player2In3.game.should.equal(gameIn3);
                     });
 
+                    it('distinguishes by the datamodel', function () {
+                        const lib1 = new JOM.Library();
+                        const Game = lib1.createClass('Game');
+                        const Player = lib1.createClass('Player', { client: (opt, model) => !model || model.id === opt.id });
+                        Player.attribute('id', 'Number');
+                        Game.link(Player, '1-*');
+
+                        const game = new Game();
+                        const player1 = new Player();
+                        player1.id = 1;
+                        const player2 = new Player();
+                        player2.id = 2;
+                        game.players.push(player1);
+
+                        const lib2 = new JOM.Library();
+                        const lib3 = new JOM.Library();
+
+                        lib1.toStream(lib2.fromStream, { id: 1 });
+                        lib1.toStream(lib3.fromStream, { id: 2 });
+
+                        const gameIn2 = lib2.getDataModel().get('Game@0');
+                        const player1In2 = lib2.getDataModel().get('Player@1');
+                        const player2In2 = lib2.getDataModel().get('Player@2');
+
+                        gameIn2.players.should.deep.equal([player1In2]);
+                        player1In2.game.should.equal(gameIn2);
+                        expect(player2In2).to.be.undefined;
+
+                        const gameIn3 = lib3.getDataModel().get('Game@0');
+                        const player1In3 = lib3.getDataModel().get('Player@1');
+                        const player2In3 = lib3.getDataModel().get('Player@2');
+
+                        gameIn3.players.should.deep.equal([]);
+                        expect(player1In3).to.be.undefined;
+                        player2In3.should.not.be.undefined;
+
+                        game.players.push(player2);
+
+                        game.players.should.deep.equal([player1, player2]);
+
+                        gameIn2.players.should.deep.equal([player1In2]);
+                        player1In2.game.should.equal(gameIn2);
+                        expect(player2In2).to.be.undefined;
+
+                        gameIn3.players.should.deep.equal([player2In3]);
+                        expect(player1In3).to.be.undefined;
+                        player2In3.game.should.equal(gameIn3);
+                    });
+
                 });
             });
 

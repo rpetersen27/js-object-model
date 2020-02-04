@@ -76,15 +76,28 @@ DataModel.prototype.toJSON = function (clientOptions) {
     var json = {}, self = this,
         classes = self.__library__.__classes__;
     Object.keys(this.__cache__).forEach(function (key) {
-        var className = self.__cache__[key].__name__;
-        if (!classes[className].options.client(clientOptions)) return;
-        json[key] = self.clone(self.__cache__[key]);
+        var instance = self.__cache__[key],
+            className = instance.__name__;
+        if (!classes[className].options.client(clientOptions, instance)) return;
+        json[key] = self.clone(instance);
         for (var attrName in json[key]) {
             var linkId = className + '@@@' + attrName,
                 attr = self.__library__.__attributes__[linkId];
-            if (attr && !attr.options.client(clientOptions)) delete json[key][attrName];
+            if (attr && !attr.options.client(clientOptions, instance) || !classes[className].options.client(clientOptions, instance)) delete json[key][attrName];
             var link = self.__library__.__links__[linkId];
-            if (link && (!link.options.client(clientOptions) || !classes[link.args[1].class.__name__].options.client(clientOptions))) delete json[key][attrName];
+            if (link) {
+                if (!link.options.client(clientOptions) || !classes[link.args[1].class.__name__].options.client(clientOptions)) delete json[key][attrName];
+                else if (json[key][attrName] instanceof Array) {
+                    json[key][attrName] = json[key][attrName].filter(function (id) {
+                        var instance = self.__cache__[id];
+                        if (!classes[instance.__name__].options.client(clientOptions, instance)) return false;
+                        return true;
+                    });
+                } else if(json[key][attrName]) {
+                    var instance = self.__cache__[json[key][attrName]];
+                    if (!classes[instance.__name__].options.client(clientOptions, instance)) delete json[key][attrName];
+                }
+            }
         }
     });
     return JSON.stringify(json);

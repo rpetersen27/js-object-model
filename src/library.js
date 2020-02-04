@@ -23,11 +23,19 @@ function Library() {
 Library.prototype.toStream = function (cb, clientOptions) {
     var self = this;
     this.on('all', function (event, a1, a2, a3, a4) {
-        if (event === 'init' && !self.__classes__[a1].options.client(clientOptions)) return;
+        // check for class restrictions
+        if (event === 'init' && !self.__classes__[a1].options.client(clientOptions, a2)) return;
+        // check for instance restrictions
+        if (a4 && !self.__classes__[a4.__name__].options.client(clientOptions, a4));
+        // check for attribute restrictions
         var attr = a4 && self.__attributes__[a4.__name__ + '@@@' + a1];
         if (attr && !attr.options.client(clientOptions)) return;
+        // check for link restrictions
         var link = a4 && self.__links__[a4.__name__ + '@@@' + a1];
         if (link && (!link.options.client(clientOptions) || !self.__classes__[link.args[1].class.__name__].options.client(clientOptions))) return;
+        // for addto/removefrom events, check if target is for client
+        if (!!event.match('^(addto|removefrom)$') && a2.__name__ && !self.__classes__[a2.__name__].options.client(clientOptions, a2)) return;
+        // map objects to id
         var args = Array.prototype.slice.call(arguments).map(function (arg) {
             if (arg && arg.__id__) return arg.__id__;
             if (arg && arg instanceof Array) return arg.map(function (a) {
