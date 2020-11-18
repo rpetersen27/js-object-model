@@ -124,7 +124,7 @@ Library.prototype.fromJSON = function (str) {
     var self = this,
         model = JSON.parse(str);
     model.classes.forEach(function (name) {
-        self.createClass(name);
+        self.getClass(name);
     });
     // attributes
     model.attributes.forEach(function (args) {
